@@ -1,371 +1,407 @@
 <template>
-    <div class="app-wrapper min-h-screen bg-[#323437]">
+    <div class="h-screen flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-[#202123] flex flex-col">
+            <!-- New Chat Button -->
+            <button class="m-3 flex py-3 px-3 items-center gap-3 rounded-md hover:bg-[#2A2B32] transition-colors duration-200 text-white cursor-pointer text-sm mb-2 border border-[#4E4F60]/20">
+                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New chat
+            </button>
+
+            <!-- Chat History -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="flex flex-col gap-2 text-gray-100 text-sm">
+                    <div class="flex flex-col gap-1">
+                        <h3 class="text-xs text-gray-500 font-medium px-3 pt-3">Today</h3>
+                        <div v-for="(chat, index) in todayChats" :key="index"
+                            class="py-3 px-3 hover:bg-[#2A2B32] cursor-pointer rounded-md mx-2 text-[#ECECF1] flex items-center gap-2">
+                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            {{ chat.title }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Content -->
-        <main class="py-8">
-            <router-view />
-        </main>
+        <div class="flex-1 flex flex-col bg-[#343541] overflow-hidden">
+            <!-- Top Navigation -->
+            <div class="h-12 border-b border-[#4E4F60]/20 flex items-center justify-between px-4 bg-[#343541]">
+                <div class="flex items-center gap-2">
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden p-2 hover:bg-[#2A2B32] rounded-md">
+                        <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-[#ECECF1]" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <span class="text-[#ECECF1]">New Chat</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="p-2 hover:bg-[#2A2B32] rounded-md">
+                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-[#ECECF1]" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="1"></circle>
+                            <circle cx="19" cy="12" r="1"></circle>
+                            <circle cx="5" cy="12" r="1"></circle>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="flex-1 overflow-hidden flex flex-col">
+                <!-- Chat Messages -->
+                <div class="flex-1 overflow-y-auto">
+                    <div v-if="messages.length === 0" class="h-full flex flex-col items-center justify-center">
+                        <h1 class="text-4xl font-semibold text-center text-[#ECECF1] mb-6">What can I help with?</h1>
+                    </div>
+                    <div v-else v-for="(message, index) in messages" :key="index" 
+                        class="border-b border-[#4E4F60]/20"
+                        :class="{ 'bg-[#343541]': message.isUser, 'bg-[#444654]': !message.isUser }">
+                        <div class="max-w-3xl mx-auto flex gap-4 px-4 py-6">
+                            <!-- Avatar -->
+                            <div class="w-8 h-8 rounded-sm flex items-center justify-center text-sm shrink-0"
+                                :class="{ 'bg-[#5436DA]': message.isUser, 'bg-[#10A37F]': !message.isUser }">
+                                {{ message.isUser ? 'U' : 'C' }}
+                            </div>
+                            <!-- Message Content -->
+                            <div class="flex-1 text-[#ECECF1]">
+                                <!-- Message Header -->
+                                <div v-if="!message.isUser" class="text-[14px] leading-5 mb-1 text-[#8E8EA0]">
+                                    Received your message with {{ message.images?.length || 0 }} images. Here's what I found in the images:
+                                </div>
+                                <!-- Message Text with Actions -->
+                                <div class="group relative">
+                                    <div class="max-h-[450px] overflow-y-auto pr-10 custom-scrollbar">
+                                        <p class="whitespace-pre-wrap text-[16px] leading-6">
+                                            <template v-for="(part, idx) in splitTextWithHighlights(message.text)" :key="idx">
+                                                <span v-if="part.highlight" class="border-b-2 border-red-500">{{ part.text }}</span>
+                                                <span v-else>{{ part.text }}</span>
+                                            </template>
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Edit Button (Top Right) -->
+                                    <div v-if="!message.isUser" 
+                                        class="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button @click="editMessage(index)"
+                                            class="p-1.5 text-gray-400 hover:text-[#ECECF1] rounded-md">
+                                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 20h9"></path>
+                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Bottom Action Buttons -->
+                                    <div v-if="!message.isUser" class="flex items-center gap-2 mt-4">
+                                        <button @click="copyMessage(message.text)"
+                                            class="p-1 text-gray-400 hover:text-[#ECECF1] rounded-md flex items-center gap-2 text-sm"
+                                            :class="{ 'text-green-500': message.isCopied }">
+                                            <svg v-if="message.isCopied" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
+                                                <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm12 14a1 1 0 01-1 1H6a1 1 0 01-1-1V6a1 1 0 011-1h8a1 1 0 011 1v13z" />
+                                            </svg>
+                                            Copy
+                                        </button>
+                                        <button @click="regenerateResponse(index)"
+                                            class="p-1 text-gray-400 hover:text-[#ECECF1] rounded-md flex items-center gap-2 text-sm">
+                                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                                <path d="M3 3v5h5"></path>
+                                            </svg>
+                                            Regenerate
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="border-t border-[#4E4F60]/20 bg-[#343541]">
+                    <div class="max-w-3xl mx-auto p-4">
+                        <!-- Attached Files Preview -->
+                        <div v-if="attachedFiles.length > 0" class="mb-3">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-xs">
+                                <div v-for="(file, index) in attachedFiles" :key="index" 
+                                    class="relative group aspect-square bg-[#444654] rounded-md overflow-hidden border border-[#4E4F60]/20">
+                                    <img :src="file.url" alt="Attached file" class="w-full h-full object-cover" />
+                                    <button @click="removeFile(index)" 
+                                        class="absolute top-1 right-1 bg-[#343541] p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-[#ECECF1]" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Text Input Area -->
+                        <div class="relative flex items-end gap-2 bg-[#40414F] rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#4E4F60]/20">
+                            <div class="flex-1">
+                                <textarea 
+                                    v-model="userInput"
+                                    rows="1"
+                                    placeholder="Message ChatGPT..."
+                                    class="w-full bg-transparent border-0 resize-none py-4 px-3 text-[#ECECF1] placeholder-[#8E8EA0] focus:outline-none focus:ring-0"
+                                    @input="autoGrow"
+                                    ref="textarea"
+                                ></textarea>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex items-center gap-2 pr-2">
+                                <!-- Attach Button -->
+                                <button class="p-2 text-[#8E8EA0] hover:text-[#ECECF1] transition-colors relative">
+                                    <input 
+                                        type="file" 
+                                        @change="handleFileUpload" 
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        accept="image/*"
+                                        multiple
+                                    />
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+
+                                <!-- Send Button -->
+                                <button 
+                                    @click="sendMessage"
+                                    :disabled="!canSend"
+                                    class="p-2 text-[#8E8EA0] hover:text-[#ECECF1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import * as Tesseract from 'tesseract.js';
-import { OcrService, OcrProgress } from './services/OcrService';
+import { OcrService } from './services/OcrService';
 
-export default defineComponent({
-    name: 'App',
-    setup() {
-        const imageUrl = ref<string | null>(null);
-        const originalImageUrl = ref<string | null>(null);
-        const recognizedText = ref<string>('');
-        const isProcessing = ref<boolean>(false);
-        const errorMessage = ref<string>('');
-        const progress = ref<number>(0);
-        const confidence = ref<number>(0);
-        const processingStatus = ref<string>('Processing image, please wait...');
-        const fileInput = ref<HTMLInputElement | null>(null);
-        const pasteArea = ref<HTMLDivElement | null>(null);
-        const isPasteFocused = ref<boolean>(false);
-        const isCopied = ref<boolean>(false);
-        const selectedLanguage = ref<string>('eng');
-        const recognitionQuality = ref<string>('standard');
-        const selectedEngine = ref<string>('tesseract');
-        const isEasyOcrAvailable = ref<boolean>(false);
-        const checkingServer = ref<boolean>(true);
-        const imageFile = ref<File | null>(null);
-        const originalImageFile = ref<File | null>(null);
-        const preserveLayout = ref<boolean>(true);
+interface AttachedFile {
+    file: File;
+    url: string;
+}
 
-        // Check if EasyOCR server is available
-        const checkServerStatus = async () => {
-            checkingServer.value = true;
-            isEasyOcrAvailable.value = await OcrService.isServerAvailable();
-            checkingServer.value = false;
+interface Message {
+    text: string;
+    images?: string[];
+    isUser: boolean;
+    timestamp: Date;
+    isCopied?: boolean;
+}
 
-            // If server went offline, switch to Tesseract
-            if (!isEasyOcrAvailable.value && selectedEngine.value === 'easyocr') {
-                selectedEngine.value = 'tesseract';
-            }
-        };
+// Reactive state
+const userInput = ref('');
+const attachedFiles = ref<AttachedFile[]>([]);
+const messages = ref<Message[]>([]);
+const isProcessing = ref(false);
+const textarea = ref<HTMLTextAreaElement | null>(null);
 
-        const triggerFileInput = () => {
-            if (fileInput.value) {
-                fileInput.value.click();
-            }
-        };
-
-        const focusPasteArea = () => {
-            if (pasteArea.value) {
-                pasteArea.value.focus();
-            }
-        };
-
-        const handlePaste = (event: ClipboardEvent) => {
-            // Skip if we're pasting into an input element
-            if (
-                event.target instanceof HTMLInputElement ||
-                event.target instanceof HTMLTextAreaElement
-            ) {
-                return;
-            }
-
-            event.preventDefault();
-            const items = event.clipboardData?.items;
-
-            if (!items) return;
-
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    const blob = items[i].getAsFile();
-                    if (blob) {
-                        imageFile.value = blob;
-                        originalImageFile.value = blob;
-                        imageUrl.value = URL.createObjectURL(blob);
-                        originalImageUrl.value = imageUrl.value;
-                        recognizedText.value = '';
-                        errorMessage.value = '';
-                        break;
-                    }
-                }
-            }
-        };
-
-        const handleImageUpload = (event: Event) => {
-            const target = event.target as HTMLInputElement;
-            if (target.files && target.files[0]) {
-                const file = target.files[0];
-                imageFile.value = file;
-                originalImageFile.value = file;
-                imageUrl.value = URL.createObjectURL(file);
-                originalImageUrl.value = imageUrl.value;
-                recognizedText.value = '';
-                errorMessage.value = '';
-            }
-        };
-
-        const getRecognitionOptions = () => {
-            let options: any = {};
-
-            switch (recognitionQuality.value) {
-                case 'fast':
-                    options = { tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK };
-                    break;
-                case 'best':
-                    options = { tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT };
-                    break;
-                default:
-                    options = { tessedit_pageseg_mode: Tesseract.PSM.AUTO };
-                    break;
-            }
-
-            return options;
-        };
-
-        const handleOcrProgress = (ocrProgress: OcrProgress) => {
-            progress.value = ocrProgress.progress;
-
-            switch (ocrProgress.status) {
-                case 'recognizing':
-                    processingStatus.value = 'Recognizing text...';
-                    break;
-                case 'uploading':
-                    processingStatus.value = 'Uploading image to server...';
-                    break;
-                case 'processing':
-                    processingStatus.value = 'Processing on server...';
-                    break;
-                case 'completed':
-                    processingStatus.value = 'Finishing up...';
-                    break;
-                default:
-                    processingStatus.value = `Processing: ${ocrProgress.status}`;
-            }
-        };
-
-        const processImage = async () => {
-            if (!imageUrl.value || !imageFile.value) return;
-
-            try {
-                isProcessing.value = true;
-                recognizedText.value = '';
-                errorMessage.value = '';
-                confidence.value = 0;
-                progress.value = 0;
-
-                let result;
-
-                if (selectedEngine.value === 'easyocr' && isEasyOcrAvailable.value) {
-                    // Process with EasyOCR server
-                    result = await OcrService.processWithEasyOCR(
-                        imageFile.value,
-                        selectedLanguage.value,
-                        recognitionQuality.value,
-                        [],
-                        handleOcrProgress,
-                        preserveLayout.value // Pass the layout preservation preference
-                    );
-                } else {
-                    // Process with Tesseract.js
-                    const tesseractOptions = getRecognitionOptions();
-                    result = await OcrService.processWithTesseract(
-                        imageUrl.value,
-                        selectedLanguage.value,
-                        tesseractOptions,
-                        handleOcrProgress,
-                        preserveLayout.value // Pass the layout preservation preference
-                    );
-                }
-
-                recognizedText.value = result.text;
-                confidence.value = result.confidence;
-
-                if (!recognizedText.value.trim()) {
-                    errorMessage.value = 'No text detected in the image.';
-                }
-            } catch (error: any) {
-                console.error('OCR error:', error);
-                errorMessage.value = `Error: ${error.message || 'Failed to process image'}`;
-
-                // If EasyOCR failed, recheck server and fall back to Tesseract
-                if (selectedEngine.value === 'easyocr') {
-                    await checkServerStatus();
-                    if (!isEasyOcrAvailable.value) {
-                        selectedEngine.value = 'tesseract';
-                    }
-                }
-            } finally {
-                isProcessing.value = false;
-            }
-        };
-
-        const copyToClipboard = async () => {
-            if (!recognizedText.value) return;
-
-            try {
-                await navigator.clipboard.writeText(recognizedText.value);
-                isCopied.value = true;
-
-                // Reset the "Copied!" state after 2 seconds
-                setTimeout(() => {
-                    isCopied.value = false;
-                }, 2000);
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                errorMessage.value = 'Failed to copy text to clipboard';
-            }
-        };
-
-        const applyPreprocessing = async (type: string) => {
-            if (!originalImageUrl.value || !originalImageFile.value) return;
-
-            try {
-                const img = new Image();
-
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    if (!ctx) {
-                        errorMessage.value = 'Failed to process image: canvas context not available';
-                        return;
-                    }
-
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-
-                    // Draw original image
-                    ctx.drawImage(img, 0, 0);
-
-                    // Apply filter based on type
-                    switch (type) {
-                        case 'grayscale':
-                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                            const data = imageData.data;
-
-                            for (let i = 0; i < data.length; i += 4) {
-                                const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                                data[i] = avg; // R
-                                data[i + 1] = avg; // G
-                                data[i + 2] = avg; // B
-                            }
-
-                            ctx.putImageData(imageData, 0, 0);
-                            break;
-
-                        case 'contrast':
-                            ctx.filter = 'contrast(180%)';
-                            ctx.drawImage(img, 0, 0);
-                            break;
-
-                        case 'sharpen':
-                            // Apply a simple sharpening filter
-                            ctx.filter = 'contrast(120%) brightness(120%)';
-                            ctx.drawImage(img, 0, 0);
-                            break;
-                    }
-
-                    // Convert to blob and update image URL
-                    canvas.toBlob((blob) => {
-                        if (blob) {
-                            imageFile.value = new File([blob], 'processed-image.png', { type: 'image/png' });
-                            if (imageUrl.value) {
-                                URL.revokeObjectURL(imageUrl.value);
-                            }
-                            imageUrl.value = URL.createObjectURL(blob);
-                        }
-                    }, 'image/png');
-                };
-
-                img.src = originalImageUrl.value;
-            } catch (error) {
-                console.error('Image processing error:', error);
-                errorMessage.value = 'Failed to process the image';
-            }
-        };
-
-        const resetImage = () => {
-            if (originalImageUrl.value && originalImageFile.value) {
-                if (imageUrl.value) {
-                    URL.revokeObjectURL(imageUrl.value);
-                }
-                imageUrl.value = originalImageUrl.value;
-                imageFile.value = originalImageFile.value;
-            }
-        };
-
-        // Allow pasting from anywhere in the app
-        onMounted(() => {
-            document.addEventListener('paste', handlePaste);
-
-            if (pasteArea.value) {
-                pasteArea.value.focus();
-            }
-
-            // Check if EasyOCR server is available
-            checkServerStatus();
-
-            return () => {
-                document.removeEventListener('paste', handlePaste);
-            };
-        });
-
-        // New reactive states for improved UI
-        const showOptions = ref<boolean>(false);
-
-        const getConfidenceClass = (confidence: number) => {
-            if (confidence >= 0.8) return 'high';
-            if (confidence >= 0.5) return 'medium';
-            return 'low';
-        };
-
-        return {
-            imageUrl,
-            recognizedText,
-            isProcessing,
-            errorMessage,
-            progress,
-            confidence,
-            processingStatus,
-            fileInput,
-            pasteArea,
-            isPasteFocused,
-            isCopied,
-            selectedLanguage,
-            recognitionQuality,
-            selectedEngine,
-            isEasyOcrAvailable,
-            checkingServer,
-            handleImageUpload,
-            processImage,
-            triggerFileInput,
-            handlePaste,
-            focusPasteArea,
-            copyToClipboard,
-            applyPreprocessing,
-            resetImage,
-            checkServerStatus,
-            showOptions,
-            getConfidenceClass,
-            preserveLayout,
-        };
-    },
+// Computed properties
+const canSend = computed(() => {
+    return userInput.value.trim().length > 0 || attachedFiles.value.length > 0;
 });
+
+// Methods
+const autoGrow = () => {
+    if (textarea.value) {
+        textarea.value.style.height = 'auto';
+        textarea.value.style.height = textarea.value.scrollHeight + 'px';
+    }
+};
+
+const handleFileUpload = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    if (target.files) {
+        Array.from(target.files).forEach(file => {
+            const url = URL.createObjectURL(file);
+            attachedFiles.value.push({ file, url });
+        });
+    }
+    // Reset input value to allow selecting the same file again
+    target.value = '';
+};
+
+const removeFile = (index: number) => {
+    URL.revokeObjectURL(attachedFiles.value[index].url);
+    attachedFiles.value.splice(index, 1);
+};
+
+const processImages = async () => {
+    const processedImages: string[] = [];
+    for (const file of attachedFiles.value) {
+        try {
+            const result = await OcrService.processWithTesseract(
+                file.url,
+                'eng',
+                {},
+                () => {},
+                true
+            );
+            if (result.text) {
+                processedImages.push(result.text);
+            }
+        } catch (error) {
+            console.error('Failed to process image:', error);
+        }
+    }
+    return processedImages;
+};
+
+const sendMessage = async () => {
+    if (!canSend.value || isProcessing.value) return;
+
+    isProcessing.value = true;
+    try {
+        // Add user message
+        const userMessage: Message = {
+            text: userInput.value,
+            images: attachedFiles.value.map(f => f.url),
+            isUser: true,
+            timestamp: new Date()
+        };
+        messages.value.push(userMessage);
+
+        // Process images if any
+        const processedTexts = await processImages();
+        
+        // TODO: Send to Claude API
+        const prompt = [
+            userInput.value,
+            ...processedTexts
+        ].join('\n\n');
+
+        // Simulate Claude response for now
+        setTimeout(() => {
+            messages.value.push({
+                text: `Received your message with ${attachedFiles.value.length} images. Here's what I found in the images:\n\n${processedTexts.join('\n\n')}`,
+                isUser: false,
+                timestamp: new Date()
+            });
+            isProcessing.value = false;
+        }, 1000);
+
+        // Clear input and files
+        userInput.value = '';
+        attachedFiles.value.forEach(file => URL.revokeObjectURL(file.url));
+        attachedFiles.value = [];
+
+        if (textarea.value) {
+            textarea.value.style.height = 'auto';
+        }
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        isProcessing.value = false;
+    }
+};
+
+// Handle paste events
+const handlePaste = (event: ClipboardEvent) => {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+            const file = items[i].getAsFile();
+            if (file) {
+                const url = URL.createObjectURL(file);
+                attachedFiles.value.push({ file, url });
+            }
+        }
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('paste', handlePaste);
+    return () => {
+        document.removeEventListener('paste', handlePaste);
+    };
+});
+
+// Add today's chats
+const todayChats = ref([
+    { title: "Get Tag Release Name" },
+    { title: "Using Tag Names in CI" }
+]);
+
+const copyMessage = async (text: string) => {
+    try {
+        await navigator.clipboard.writeText(text);
+        // Find the message and set its isCopied state
+        const message = messages.value.find(m => m.text === text);
+        if (message) {
+            message.isCopied = true;
+            setTimeout(() => {
+                message.isCopied = false;
+            }, 2000);
+        }
+    } catch (err) {
+        console.error('Failed to copy text:', err);
+    }
+};
+
+const editMessage = (index: number) => {
+    const message = messages.value[index];
+    if (!message.isUser) {
+        userInput.value = message.text;
+        if (textarea.value) {
+            textarea.value.focus();
+            autoGrow();
+        }
+    }
+};
+
+const regenerateResponse = (index: number) => {
+    // Remove all messages after this index
+    messages.value = messages.value.slice(0, index);
+    // Trigger a new response
+    sendMessage();
+};
+
+const splitTextWithHighlights = (text: string) => {
+    // This is a placeholder implementation - you should implement your own logic
+    // to determine which parts should be highlighted
+    const parts = text.split(/(\basdfasdfasdfasfasfa\b|\basdfasdfa\b|\basfasdfasfda\b)/g);
+    return parts.map(part => ({
+        text: part,
+        highlight: /^(asdfasdfasdfasfasfa|asdfasdfa|asfasdfasfda)$/.test(part)
+    }));
+};
 </script>
 
 <style>
 :root {
-    --primary-color: #4361ee;
-    --primary-light: #4895ef;
-    --primary-dark: #3a0ca3;
-    --success: #4cc9f0;
-    --warning: #f72585;
-    --text-dark: #2b2d42;
-    --text-light: #8d99ae;
-    --bg-light: #f8f9fa;
-    --bg-card: #ffffff;
-    --border-radius: 8px;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
+    --primary-color: #10A37F;
+    --primary-light: #1A7F64;
+    --primary-dark: #0D5D4A;
+    --text-light: #ECECF1;
+    --text-muted: #8E8EA0;
+    --bg-dark: #343541;
+    --bg-darker: #444654;
+    --border-color: #565869;
 }
 
 * {
@@ -375,473 +411,165 @@ export default defineComponent({
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #323437;
-    color: #646669;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
     line-height: 1.6;
 }
 
-/* App container */
-.app-container {
-    max-width: 800px;
-    width: 90%;
-    margin: 0 auto;
-    padding: 20px 0;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
 }
 
-/* Heading styles */
-h1 {
-    text-align: center;
-    color: #e2b714;
-    margin-bottom: 20px;
-    font-weight: 600;
-    font-size: 28px;
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
 }
 
-h2 {
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Textarea styles */
+textarea {
+    min-height: 24px;
+    max-height: 200px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Message styles */
+.message {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.message:last-child {
+    border-bottom: none;
+}
+
+/* Avatar styles */
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
     font-weight: 500;
-    font-size: 18px;
-    margin: 0;
-    color: #e2b714;
-}
-
-/* Card styles */
-.card {
-    background-color: #2c2e31;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    border: 1px solid #3c3e42;
-}
-
-/* Section styles */
-.section {
-    padding: 20px;
-}
-
-.section + .section {
-    border-top: 1px solid #3c3e42;
+    flex-shrink: 0;
 }
 
 /* Button styles */
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    background-color: #3c3e42;
-    color: #e2b714;
+button {
+    transition: all 0.2s ease;
 }
 
-.btn:hover {
-    background-color: #4c4e52;
-}
-
-.btn:disabled {
-    opacity: 0.6;
+button:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-.btn.primary {
-    background-color: #e2b714;
-    color: #323437;
-}
-
-.btn.primary:hover:not(:disabled) {
-    background-color: #f8d03b;
-}
-
-/* Form elements */
-select {
-    width: 100%;
-    padding: 8px;
+/* Image preview styles */
+.image-preview {
     border-radius: 4px;
-    border: 1px solid #3c3e42;
-    background-color: #2c2e31;
-    color: #e2b714;
-    font-size: 14px;
-}
-
-/* Text result styles */
-.text-result-wrapper {
-    position: relative;
-    border: 1px solid #3c3e42;
-    border-radius: var(--border-radius);
-    background-color: #323437;
-}
-
-.text-result {
-    padding: 16px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    max-height: 300px;
-    overflow-y: auto;
-    margin: 0;
-    font-family: 'Consolas', monospace;
-    font-size: 14px;
-    color: #e2b714;
-}
-
-/* Error message styles */
-.error-message {
-    display: flex;
-    align-items: center;
-    background-color: rgba(226, 183, 20, 0.1);
-    color: #e2b714;
-    padding: 12px;
-    border-radius: var(--border-radius);
-    margin-top: 16px;
-}
-
-/* Router link active state */
-.router-link-active {
-    color: #e2b714;
-}
-
-/* Section header */
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-/* Engine selector */
-.engine-selector {
-    display: flex;
-    align-items: center;
-}
-
-/* Server badge */
-.server-badge {
-    margin-left: 8px;
-    font-size: 12px;
-    display: flex;
-}
-
-.server-badge.offline .retry-btn {
-    background: none;
-    border: none;
-    color: #e2b714;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-/* Paste container */
-.paste-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.paste-area {
-    border: 2px dashed #3c3e42;
-    border-radius: var(--border-radius);
-    height: 140px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: var(--transition);
-    outline: none;
-    background-color: #2c2e31;
     overflow: hidden;
+    border: 1px solid var(--border-color);
 }
 
-.paste-focus {
-    border-color: #e2b714;
-}
-
-.paste-instructions {
-    text-align: center;
-    color: #646669;
-    max-width: 80%;
-}
-
-.paste-icon {
-    font-size: 28px;
-    margin-bottom: 8px;
-}
-
-.preview-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-/* Upload controls */
-.upload-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-/* Process button */
-.process-btn {
+.image-preview img {
     width: 100%;
-    margin-top: 16px;
-    padding: 10px;
-    font-weight: 500;
-}
-
-/* Options toggle */
-.options-toggle {
-    font-size: 14px;
-    color: #646669;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    transition: var(--transition);
-}
-
-.options-toggle:hover {
-    color: #e2b714;
-}
-
-.options-toggle.active {
-    color: #e2b714;
-}
-
-.toggle-icon {
-    margin-left: 4px;
-    font-size: 10px;
-}
-
-/* Options panel */
-.options-panel {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-}
-
-.options-panel.visible {
-    max-height: 200px;
-    margin-top: 16px;
-    margin-bottom: 16px;
-}
-
-.options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.option-item label {
-    display: block;
-    font-size: 14px;
-    margin-bottom: 4px;
-    color: #646669;
-}
-
-/* Image processing */
-.image-processing {
-    margin-top: 12px;
-    border-top: 1px solid #3c3e42;
-    padding-top: 12px;
-}
-
-.processing-label {
-    font-size: 14px;
-    color: #646669;
-    margin-bottom: 6px;
-}
-
-.processing-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.image-btn {
-    font-size: 12px;
-    padding: 4px 10px;
-    background-color: #3c3e42;
-    color: #e2b714;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.image-btn:hover {
-    background-color: #4c4e52;
-}
-
-.image-btn.reset {
-    color: #e2b714;
-}
-
-/* Result section */
-.result-section {
-    background-color: #2c2e31;
-}
-
-.confidence-badge {
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: 500;
-}
-
-.confidence-badge.high {
-    background-color: rgba(226, 183, 20, 0.2);
-    color: #e2b714;
-}
-
-.confidence-badge.medium {
-    background-color: rgba(226, 183, 20, 0.2);
-    color: #e2b714;
-}
-
-.confidence-badge.low {
-    background-color: rgba(226, 183, 20, 0.2);
-    color: #e2b714;
-}
-
-/* Processing status */
-.processing-status {
-    text-align: center;
-    padding: 20px;
-    color: #646669;
-}
-
-.progress-bar {
-    height: 6px;
-    background-color: #3c3e42;
-    border-radius: 3px;
-    margin: 12px auto;
-    width: 80%;
-    max-width: 300px;
-    overflow: hidden;
-}
-
-.progress-fill {
     height: 100%;
-    background-color: #e2b714;
-    transition: width 0.4s ease;
+    object-fit: cover;
 }
 
-/* Result content */
-.result-content {
-    display: flex;
-    flex-direction: column;
-}
-
-.result-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 8px;
-}
-
-.copy-btn.copied {
-    background-color: #e2b714;
-    color: #323437;
-}
-
-/* Error icon */
-.error-icon {
-    margin-right: 10px;
-    font-size: 18px;
-}
-
-/* Loader */
-.loader {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(226, 183, 20, 0.3);
-    border-radius: 50%;
-    border-top-color: #e2b714;
-    animation: spin 1s linear infinite;
-    display: inline-block;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .message-content {
+        padding: 0.75rem;
+    }
+    
+    .avatar {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
     }
 }
 
-/* Toggle switch */
-.toggle-switch {
-    display: flex;
-    align-items: center;
-    margin-top: 4px;
+/* Hide scrollbar for Chrome, Safari and Opera */
+.overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
 }
 
-.toggle-input {
-    height: 0;
-    width: 0;
-    visibility: hidden;
-    position: absolute;
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
 }
 
-.toggle-label {
-    cursor: pointer;
-    width: 40px;
-    height: 20px;
-    background: #3c3e42;
-    display: block;
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
     border-radius: 20px;
-    position: relative;
 }
 
-.toggle-label:after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 16px;
-    height: 16px;
-    background: #323437;
-    border-radius: 16px;
-    transition: 0.3s;
+/* Prevent text selection on buttons */
+button {
+    user-select: none;
 }
 
-.toggle-input:checked + .toggle-label {
-    background: #e2b714;
+/* Improve textarea appearance */
+textarea {
+    min-height: 24px;
+    max-height: 200px;
 }
 
-.toggle-input:checked + .toggle-label:after {
-    left: calc(100% - 2px);
-    transform: translateX(-100%);
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .w-64 {
+        display: none;
+    }
 }
 
-.toggle-text {
-    margin-left: 10px;
-    font-size: 14px;
+/* Add these new styles */
+.group:hover .group-hover\:opacity-100 {
+    opacity: 1;
 }
 
-@media (max-width: 600px) {
-    .app-container {
-        width: 95%;
-        padding: 10px 0;
-    }
+.group-hover\:opacity-100 {
+    transition: opacity 0.2s ease;
+}
 
-    .section {
-        padding: 16px;
-    }
+/* Custom scrollbar for message content */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
 
-    h1 {
-        font-size: 24px;
-    }
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
 
-    .paste-area {
-        height: 120px;
-    }
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
 
-    .options-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+}
+
+/* Message text highlighting */
+.border-b-2.border-red-500 {
+    border-style: solid;
+    border-color: rgb(239, 68, 68);
 }
 </style>
