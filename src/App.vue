@@ -3,7 +3,8 @@
         <!-- Sidebar -->
         <div class="w-64 bg-[#202123] flex flex-col">
             <!-- New Chat Button -->
-            <button class="m-3 flex py-3 px-3 items-center gap-3 rounded-md hover:bg-[#2A2B32] transition-colors duration-200 text-white cursor-pointer text-sm mb-2 border border-[#4E4F60]/20">
+            <button @click="createNewChat"
+                class="m-3 flex py-3 px-3 items-center gap-3 rounded-md hover:bg-[#2A2B32] transition-colors duration-200 text-white cursor-pointer text-sm mb-2 border border-[#4E4F60]/20">
                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -14,14 +15,69 @@
             <!-- Chat History -->
             <div class="flex-1 overflow-y-auto">
                 <div class="flex flex-col gap-2 text-gray-100 text-sm">
-                    <div class="flex flex-col gap-1">
-                        <h3 class="text-xs text-gray-500 font-medium px-3 pt-3">Today</h3>
-                        <div v-for="(chat, index) in todayChats" :key="index"
-                            class="py-3 px-3 hover:bg-[#2A2B32] cursor-pointer rounded-md mx-2 text-[#ECECF1] flex items-center gap-2">
-                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                            {{ chat.title }}
+                    <div v-for="group in chatGroups" :key="group.label" class="flex flex-col gap-1">
+                        <h3 class="text-xs text-gray-500 font-medium px-3 pt-3">{{ group.label }}</h3>
+                        <div v-for="chat in group.chats" :key="chat.id"
+                            class="relative group"
+                        >
+                            <div @click="switchToChat(chat)"
+                                class="py-3 px-3 hover:bg-[#2A2B32] cursor-pointer rounded-md mx-2 text-[#ECECF1] flex items-center gap-2"
+                                :class="{ 'bg-[#2A2B32]': currentChat?.id === chat.id }">
+                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                {{ chat.title }}
+                                
+                                <!-- Context Menu Trigger -->
+                                <button @click.stop="openContextMenu(chat)" 
+                                    class="ml-auto opacity-0 group-hover:opacity-100 hover:text-white p-1 rounded">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="1"></circle>
+                                        <circle cx="12" cy="5" r="1"></circle>
+                                        <circle cx="12" cy="19" r="1"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Context Menu -->
+                            <div v-if="activeContextMenu === chat.id"
+                                class="absolute right-2 top-10 z-10 bg-[#202123] rounded-md shadow-lg border border-gray-700 py-2 min-w-[140px]">
+                                <button @click.stop="shareChat(chat)" 
+                                    class="w-full px-4 py-2 text-left text-[#ECECF1] hover:bg-[#2A2B32] flex items-center gap-3">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                        <polyline points="16 6 12 2 8 6"></polyline>
+                                        <line x1="12" y1="2" x2="12" y2="15"></line>
+                                    </svg>
+                                    Share
+                                </button>
+                                <button @click.stop="startRenameChat(chat)" 
+                                    class="w-full px-4 py-2 text-left text-[#ECECF1] hover:bg-[#2A2B32] flex items-center gap-3">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                    </svg>
+                                    Rename
+                                </button>
+                                <button @click.stop="archiveChat(chat)" 
+                                    class="w-full px-4 py-2 text-left text-[#ECECF1] hover:bg-[#2A2B32] flex items-center gap-3">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    Archive
+                                </button>
+                                <button @click.stop="deleteChat(chat)" 
+                                    class="w-full px-4 py-2 text-left text-red-500 hover:bg-[#2A2B32] flex items-center gap-3">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -41,7 +97,7 @@
                             <line x1="3" y1="18" x2="21" y2="18"></line>
                         </svg>
                     </button>
-                    <span class="text-[#ECECF1]">New Chat</span>
+                    <span class="text-[#ECECF1]">{{ currentChat?.title || 'New Chat' }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button class="p-2 hover:bg-[#2A2B32] rounded-md">
@@ -58,70 +114,65 @@
             <div class="flex-1 overflow-hidden flex flex-col">
                 <!-- Chat Messages -->
                 <div class="flex-1 overflow-y-auto">
-                    <div v-if="messages.length === 0" class="h-full flex flex-col items-center justify-center">
+                    <div v-if="!currentChat || currentChat.messages.length === 0" class="h-full flex flex-col items-center justify-center">
                         <h1 class="text-4xl font-semibold text-center text-[#ECECF1] mb-6">What can I help with?</h1>
                     </div>
-                    <div v-else v-for="(message, index) in messages" :key="index" 
-                        class="border-b border-[#4E4F60]/20"
+                    <div v-else v-for="(message, index) in currentChat.messages" :key="index" 
                         :class="{ 'bg-[#343541]': message.isUser, 'bg-[#444654]': !message.isUser }">
-                        <div class="max-w-3xl mx-auto flex gap-4 px-4 py-6">
-                            <!-- Avatar -->
-                            <div class="w-8 h-8 rounded-sm flex items-center justify-center text-sm shrink-0"
-                                :class="{ 'bg-[#5436DA]': message.isUser, 'bg-[#10A37F]': !message.isUser }">
-                                {{ message.isUser ? 'U' : 'C' }}
-                            </div>
-                            <!-- Message Content -->
-                            <div class="flex-1 text-[#ECECF1]">
-                                <!-- Message Header -->
-                                <div v-if="!message.isUser" class="text-[14px] leading-5 mb-1 text-[#8E8EA0]">
-                                    Received your message with {{ message.images?.length || 0 }} images. Here's what I found in the images:
-                                </div>
-                                <!-- Message Text with Actions -->
-                                <div class="group relative">
-                                    <div class="max-h-[450px] overflow-y-auto pr-10 custom-scrollbar">
-                                        <p class="whitespace-pre-wrap text-[16px] leading-6">
-                                            <template v-for="(part, idx) in splitTextWithHighlights(message.text)" :key="idx">
-                                                <span v-if="part.highlight" class="border-b-2 border-red-500">{{ part.text }}</span>
-                                                <span v-else>{{ part.text }}</span>
-                                            </template>
-                                        </p>
-                                    </div>
-                                    
-                                    <!-- Edit Button (Top Right) -->
-                                    <div v-if="!message.isUser" 
-                                        class="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button @click="editMessage(index)"
-                                            class="p-1.5 text-gray-400 hover:text-[#ECECF1] rounded-md">
-                                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M12 20h9"></path>
-                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                            </svg>
-                                        </button>
+                        <div class="max-w-3xl mx-auto px-4 py-6">
+                            <div class="flex" :class="{ 'justify-end': message.isUser, 'justify-start': !message.isUser }">
+                                <!-- Message Content Container -->
+                                <div class="flex gap-4 max-w-[90%]" :class="{ 'flex-row-reverse': message.isUser }">
+                                    <!-- Avatar -->
+                                    <div class="w-8 h-8 rounded-sm flex items-center justify-center text-sm shrink-0"
+                                        :class="{ 'bg-[#5436DA]': message.isUser, 'bg-[#10A37F]': !message.isUser }">
+                                        {{ message.isUser ? 'U' : 'C' }}
                                     </div>
 
-                                    <!-- Bottom Action Buttons -->
-                                    <div v-if="!message.isUser" class="flex items-center gap-2 mt-4">
-                                        <button @click="copyMessage(message.text)"
-                                            class="p-1 text-gray-400 hover:text-[#ECECF1] rounded-md flex items-center gap-2 text-sm"
-                                            :class="{ 'text-green-500': message.isCopied }">
-                                            <svg v-if="message.isCopied" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                            </svg>
-                                            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
-                                                <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm12 14a1 1 0 01-1 1H6a1 1 0 01-1-1V6a1 1 0 011-1h8a1 1 0 011 1v13z" />
-                                            </svg>
-                                            Copy
-                                        </button>
-                                        <button @click="regenerateResponse(index)"
-                                            class="p-1 text-gray-400 hover:text-[#ECECF1] rounded-md flex items-center gap-2 text-sm">
-                                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                                                <path d="M3 3v5h5"></path>
-                                            </svg>
-                                            Regenerate
-                                        </button>
+                                    <!-- Message Content -->
+                                    <div class="flex-1 min-h-[20px]" :class="{ 'flex justify-end': message.isUser }">
+                                        <div class="group relative text-[#D1D5DB]"
+                                            :class="{ 
+                                                'bg-[#19C37D] text-white rounded-2xl px-4 py-3': message.isUser,
+                                                'text-[#ECECF1]': !message.isUser 
+                                            }">
+                                            <!-- Message Text -->
+                                            <div class="max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                                                <p class="whitespace-pre-wrap text-[16px] leading-6">
+                                                    {{ message.text }}
+                                                </p>
+                                            </div>
+                                            
+                                            <!-- Edit Button (Top Right) - Only for agent messages -->
+                                            <div v-if="!message.isUser" 
+                                                class="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button @click="editMessage(index)"
+                                                    class="p-1.5 text-gray-400 hover:text-[#ECECF1] rounded-md">
+                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M12 20h9"></path>
+                                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Bottom Action Buttons - Only for agent messages -->
+                                            <div v-if="!message.isUser" class="flex items-center gap-2 mt-4 text-gray-400">
+                                                <button @click="copyMessage(message.text)"
+                                                    class="flex items-center gap-2 rounded-md hover:bg-gray-700/50 hover:text-white px-3 py-1 text-xs"
+                                                    :class="{ 'text-green-500': message.isCopied }">
+                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                                                    Copy
+                                                </button>
+                                                <button @click="regenerateResponse(index)"
+                                                    class="flex items-center gap-2 rounded-md hover:bg-gray-700/50 hover:text-white px-3 py-1 text-xs">
+                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                                        <path d="M3 3v5h5"></path>
+                                                    </svg>
+                                                    Regenerate
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -193,10 +244,37 @@
             </div>
         </div>
     </div>
+
+    <!-- Rename Dialog -->
+    <div v-if="isRenaming" 
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-[#202123] rounded-lg shadow-xl w-full max-w-md p-6" @click.stop>
+            <h3 class="text-lg font-medium text-[#ECECF1] mb-4">Rename chat</h3>
+            <input 
+                v-model="newChatTitle"
+                type="text"
+                class="w-full bg-[#40414F] border border-[#4E4F60]/20 rounded-md px-4 py-2 text-[#ECECF1] focus:outline-none focus:ring-2 focus:ring-[#10A37F]"
+                placeholder="Enter new title"
+                @keyup.enter="confirmRename"
+            />
+            <div class="flex justify-end gap-3 mt-6">
+                <button 
+                    @click="isRenaming = false"
+                    class="px-4 py-2 text-[#ECECF1] hover:bg-[#2A2B32] rounded-md">
+                    Cancel
+                </button>
+                <button 
+                    @click="confirmRename"
+                    class="px-4 py-2 bg-[#10A37F] text-white rounded-md hover:bg-[#1A7F64]">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import * as Tesseract from 'tesseract.js';
 import { OcrService } from './services/OcrService';
 
@@ -213,12 +291,60 @@ interface Message {
     isCopied?: boolean;
 }
 
+interface Chat {
+    id: string;
+    title: string;
+    messages: Message[];
+    createdAt: Date;
+    lastUpdated: Date;
+}
+
+interface ChatGroup {
+    label: string;
+    chats: Chat[];
+}
+
 // Reactive state
 const userInput = ref('');
 const attachedFiles = ref<AttachedFile[]>([]);
 const messages = ref<Message[]>([]);
 const isProcessing = ref(false);
 const textarea = ref<HTMLTextAreaElement | null>(null);
+const currentChat = ref<Chat | null>(null);
+const chats = ref<Chat[]>([]);
+const chatGroups = computed(() => {
+    const groups: { [key: string]: Chat[] } = {
+        'Today': [],
+        'Yesterday': [],
+        'Previous 7 Days': [],
+        'Previous 30 Days': []
+    };
+
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 86400000);
+    const last7Days = new Date(now.getTime() - 7 * 86400000);
+    const last30Days = new Date(now.getTime() - 30 * 86400000);
+
+    chats.value.forEach(chat => {
+        const chatDate = new Date(chat.createdAt);
+        if (chatDate.toDateString() === now.toDateString()) {
+            groups['Today'].push(chat);
+        } else if (chatDate.toDateString() === yesterday.toDateString()) {
+            groups['Yesterday'].push(chat);
+        } else if (chatDate.getTime() > last7Days.getTime()) {
+            groups['Previous 7 Days'].push(chat);
+        } else if (chatDate.getTime() > last30Days.getTime()) {
+            groups['Previous 30 Days'].push(chat);
+        }
+    });
+
+    return Object.entries(groups)
+        .filter(([_, chats]) => chats.length > 0)
+        .map(([label, chats]) => ({
+            label,
+            chats: chats.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime())
+        }));
+});
 
 // Computed properties
 const canSend = computed(() => {
@@ -271,19 +397,62 @@ const processImages = async () => {
     return processedImages;
 };
 
+const createNewChat = () => {
+    const newChat: Chat = {
+        id: crypto.randomUUID(),
+        title: 'New Chat',
+        messages: [],
+        createdAt: new Date(),
+        lastUpdated: new Date()
+    };
+    chats.value.unshift(newChat);
+    currentChat.value = newChat;
+    userInput.value = '';
+    attachedFiles.value = [];
+};
+
+const switchToChat = (chat: Chat) => {
+    currentChat.value = chat;
+    userInput.value = '';
+    attachedFiles.value = [];
+};
+
 const sendMessage = async () => {
     if (!canSend.value || isProcessing.value) return;
 
     isProcessing.value = true;
+
     try {
-        // Add user message
+        // Create a new chat if none exists
+        if (!currentChat.value) {
+            const newChat: Chat = {
+                id: crypto.randomUUID(),
+                title: userInput.value.slice(0, 30) + (userInput.value.length > 30 ? '...' : ''),
+                messages: [],
+                createdAt: new Date(),
+                lastUpdated: new Date()
+            };
+            chats.value.unshift(newChat);
+            currentChat.value = newChat;
+        }
+
+        const chat = currentChat.value;
+
+        // Create user message
         const userMessage: Message = {
             text: userInput.value,
             images: attachedFiles.value.map(f => f.url),
             isUser: true,
             timestamp: new Date()
         };
-        messages.value.push(userMessage);
+
+        // Add user message to chat
+        chat.messages.push(userMessage);
+
+        // Update chat title if this is the first message
+        if (chat.messages.length === 1) {
+            chat.title = userInput.value.slice(0, 30) + (userInput.value.length > 30 ? '...' : '');
+        }
 
         // Process images if any
         const processedTexts = await processImages();
@@ -294,15 +463,15 @@ const sendMessage = async () => {
             ...processedTexts
         ].join('\n\n');
 
-        // Simulate Claude response for now
-        setTimeout(() => {
-            messages.value.push({
-                text: `Received your message with ${attachedFiles.value.length} images. Here's what I found in the images:\n\n${processedTexts.join('\n\n')}`,
-                isUser: false,
-                timestamp: new Date()
-            });
-            isProcessing.value = false;
-        }, 1000);
+        // Add assistant response
+        chat.messages.push({
+            text: `Received your message with ${attachedFiles.value.length} images. Here's what I found in the images:\n\n${processedTexts.join('\n\n')}`,
+            isUser: false,
+            timestamp: new Date()
+        });
+
+        // Update chat's last updated time
+        chat.lastUpdated = new Date();
 
         // Clear input and files
         userInput.value = '';
@@ -314,6 +483,7 @@ const sendMessage = async () => {
         }
     } catch (error) {
         console.error('Failed to send message:', error);
+    } finally {
         isProcessing.value = false;
     }
 };
@@ -336,16 +506,31 @@ const handlePaste = (event: ClipboardEvent) => {
 
 onMounted(() => {
     document.addEventListener('paste', handlePaste);
+    
+    // Load chats from localStorage if available
+    const savedChats = localStorage.getItem('chats');
+    if (savedChats) {
+        const parsedChats = JSON.parse(savedChats);
+        chats.value = parsedChats.map((chat: any) => ({
+            ...chat,
+            createdAt: new Date(chat.createdAt),
+            lastUpdated: new Date(chat.lastUpdated),
+            messages: chat.messages.map((msg: any) => ({
+                ...msg,
+                timestamp: new Date(msg.timestamp)
+            }))
+        }));
+    }
+
     return () => {
         document.removeEventListener('paste', handlePaste);
     };
 });
 
-// Add today's chats
-const todayChats = ref([
-    { title: "Get Tag Release Name" },
-    { title: "Using Tag Names in CI" }
-]);
+// Add watch to save chats to localStorage
+watch(chats, (newChats) => {
+    localStorage.setItem('chats', JSON.stringify(newChats));
+}, { deep: true });
 
 const copyMessage = async (text: string) => {
     try {
@@ -389,6 +574,69 @@ const splitTextWithHighlights = (text: string) => {
         text: part,
         highlight: /^(asdfasdfasdfasfasfa|asdfasdfa|asfasdfasfda)$/.test(part)
     }));
+};
+
+// Add these to the script setup section after the existing interfaces
+const activeContextMenu = ref<string | null>(null);
+const isRenaming = ref(false);
+const newChatTitle = ref('');
+
+// Add these methods after the existing methods
+const openContextMenu = (chat: Chat) => {
+    activeContextMenu.value = activeContextMenu.value === chat.id ? null : chat.id;
+};
+
+const shareChat = (chat: Chat) => {
+    // Implement share functionality
+    console.log('Share chat:', chat.title);
+    activeContextMenu.value = null;
+};
+
+const startRenameChat = (chat: Chat) => {
+    newChatTitle.value = chat.title;
+    isRenaming.value = true;
+    activeContextMenu.value = null;
+};
+
+const archiveChat = (chat: Chat) => {
+    // Implement archive functionality
+    console.log('Archive chat:', chat.title);
+    activeContextMenu.value = null;
+};
+
+const deleteChat = (chat: Chat) => {
+    const index = chats.value.findIndex(c => c.id === chat.id);
+    if (index !== -1) {
+        chats.value.splice(index, 1);
+        if (currentChat.value?.id === chat.id) {
+            currentChat.value = chats.value[0] || null;
+        }
+    }
+    activeContextMenu.value = null;
+};
+
+// Add click outside handler to close context menu
+onMounted(() => {
+    // ... existing onMounted code ...
+    
+    document.addEventListener('click', (event) => {
+        if (activeContextMenu.value !== null) {
+            activeContextMenu.value = null;
+        }
+        if (isRenaming.value && !(event.target as HTMLElement).closest('.rename-dialog')) {
+            isRenaming.value = false;
+        }
+    });
+});
+
+// Add this to the script section after the existing methods
+const confirmRename = () => {
+    const chat = currentChat.value;
+    if (chat && newChatTitle.value.trim()) {
+        chat.title = newChatTitle.value.trim();
+        isRenaming.value = false;
+        newChatTitle.value = '';
+    }
 };
 </script>
 
@@ -445,12 +693,42 @@ textarea {
 
 /* Message styles */
 .message {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(32,33,35,0.5);
 }
 
-.message:last-child {
-    border-bottom: none;
+.bg-\[\#343541\] {
+    background-color: rgb(52,53,65);
+    border-bottom: 1px solid rgba(32,33,35,.5);
+}
+
+.bg-\[\#444654\] {
+    background-color: rgb(68,70,84);
+    border-bottom: 1px solid rgba(32,33,35,.5);
+}
+
+/* Improve text colors */
+.text-\[\#D1D5DB\] {
+    color: rgb(209,213,219);
+}
+
+/* Add hover effects for action buttons */
+.hover\:bg-gray-700\/50:hover {
+    background-color: rgba(55,65,81,0.5);
+}
+
+/* Improve scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(217,217,227,.8);
+    border-radius: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 /* Avatar styles */
