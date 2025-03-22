@@ -1,46 +1,57 @@
 <template>
     <div class="h-screen flex">
         <!-- Sidebar -->
-        <div class="w-64 bg-[#202123] flex flex-col transition-all duration-200" :class="{ 'w-16': isSidebarCollapsed }">
+        <div class="fixed md:relative bg-[#202123] flex flex-col transition-all duration-200 h-full z-50" 
+            :class="{ 
+                'w-64': !isSidebarCollapsed,
+                'w-0 overflow-hidden': isSidebarCollapsed,
+                '-translate-x-full md:translate-x-0': !isMobileMenuOpen,
+                'translate-x-0': isMobileMenuOpen 
+            }">
             <!-- Sidebar Header -->
             <div class="flex items-center justify-between p-3 border-b border-[#2c2e31]">
-                <!-- Toggle Sidebar Button -->
-                <button @click="isSidebarCollapsed = !isSidebarCollapsed"
-                    class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                <!-- New Chat Button -->
+                <button @click="createNewChat"
+                    class="flex-1 flex items-center gap-3 text-[#ECECF1] hover:bg-[#2A2B32] transition-colors rounded-md py-3 px-3">
+                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
+                    <span>New chat</span>
                 </button>
 
                 <!-- Search Button -->
-                <button v-if="!isSidebarCollapsed" @click="toggleSearch" 
-                    class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <button @click="toggleSearch"
+                    class="p-2 text-[#ECECF1] hover:bg-[#2A2B32] rounded-md ml-2">
+                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
                 </button>
 
-                <!-- New Chat Button -->
-                <button @click="createNewChat"
-                    class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="12" y1="8" x2="12" y2="16"></line>
-                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                <!-- Close Sidebar Button -->
+                <button @click="isSidebarCollapsed = true"
+                    class="p-2 text-[#ECECF1] hover:bg-[#2A2B32] rounded-md ml-2">
+                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
-                </div>
+            </div>
 
             <!-- Search Input (shown when search is active) -->
-            <div v-if="isSearchActive && !isSidebarCollapsed" class="p-3">
-                <div class="relative">
+            <div v-if="isSearchActive" class="p-3 border-b border-[#2c2e31]">
+                <div class="relative flex items-center">
+                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4 absolute left-3 text-[#646669]">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
                     <input type="text" 
                         v-model="searchQuery" 
                         placeholder="Search chats..."
-                        class="w-full bg-[#2c2e31] text-[#d1d0c5] placeholder-[#646669] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#e2b714]"
+                        class="w-full bg-[#2A2B32] text-[#ECECF1] placeholder-[#646669] rounded-lg pl-10 pr-3 py-2 focus:outline-none"
+                        @blur="handleSearchBlur"
                     />
-            </div>
+                </div>
             </div>
 
             <!-- Chat History -->
@@ -113,27 +124,53 @@
             </div>
         </div>
 
+        <!-- Mobile Menu Overlay -->
+        <div v-if="isMobileMenuOpen" 
+            class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            @click="isMobileMenuOpen = false">
+        </div>
+
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col bg-[#343541] overflow-hidden">
+        <div class="flex-1 flex flex-col bg-[#343541] overflow-hidden w-full">
             <!-- Top Navigation -->
             <div class="h-12 border-b border-[#4E4F60]/20 flex items-center justify-between px-4 bg-[#343541]">
+                <!-- Left Side -->
                 <div class="flex items-center gap-2">
+                    <!-- Menu Button (shown when sidebar is collapsed) -->
+                    <button @click="isSidebarCollapsed = false"
+                        v-if="isSidebarCollapsed"
+                        class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
                     <!-- Mobile Menu Button -->
-                    <button class="md:hidden p-2 hover:bg-[#2A2B32] rounded-md">
-                        <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-[#ECECF1]" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                    <button @click="isMobileMenuOpen = !isMobileMenuOpen"
+                        class="md:hidden p-2 hover:bg-[#2A2B32] rounded-md">
+                        <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24" 
+                            class="h-6 w-6 text-[#ECECF1]">
                             <line x1="3" y1="12" x2="21" y2="12"></line>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <line x1="3" y1="18" x2="21" y2="18"></line>
                         </svg>
                     </button>
-                    <span class="text-[#ECECF1]">{{ currentChat?.title || 'New Chat' }}</span>
+                    <span class="text-[#ECECF1] truncate">{{ currentChat?.title || 'New Chat' }}</span>
                 </div>
+
+                <!-- Right Side -->
                 <div class="flex items-center gap-2">
-                    <button class="p-2 hover:bg-[#2A2B32] rounded-md">
-                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-[#ECECF1]" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="1"></circle>
-                            <circle cx="19" cy="12" r="1"></circle>
-                            <circle cx="5" cy="12" r="1"></circle>
+                    <!-- Search Button -->
+                    <button class="p-2 text-[#ECECF1] hover:bg-[#2A2B32] rounded-md">
+                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-5 w-5">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                    <!-- Edit Button -->
+                    <button class="p-2 text-[#ECECF1] hover:bg-[#2A2B32] rounded-md">
+                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-5 w-5">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                         </svg>
                     </button>
                 </div>
@@ -143,14 +180,18 @@
             <div class="flex-1 overflow-hidden flex flex-col">
                 <!-- Chat Messages -->
                 <div class="flex-1 overflow-y-auto">
-                    <div v-if="!currentChat || currentChat.messages.length === 0" class="h-full flex flex-col items-center justify-center">
-                        <h1 class="text-4xl font-semibold text-center text-[#ECECF1] mb-6">What can I help with?</h1>
+                    <div v-if="!currentChat || currentChat.messages.length === 0" 
+                        class="h-full flex flex-col items-center justify-center p-4">
+                        <h1 class="text-2xl md:text-4xl font-semibold text-center text-[#ECECF1] mb-6">
+                            What can I help with?
+                        </h1>
                     </div>
                     <div v-else v-for="(message, index) in currentChat.messages" :key="index" 
-                        class="py-4 px-4">
+                        class="py-4 px-2 md:px-4">
                         <div class="flex" :class="{ 'justify-end': message.isUser, 'justify-start': !message.isUser }">
                             <!-- Message Content Container -->
-                            <div class="flex gap-4 max-w-[90%]" :class="{ 'flex-row-reverse': message.isUser }">
+                            <div class="flex gap-2 md:gap-4 max-w-[95%] md:max-w-[90%]" 
+                                :class="{ 'flex-row-reverse': message.isUser }">
                                 <!-- Avatar -->
                                 <div class="w-8 h-8 rounded-sm flex items-center justify-center text-sm shrink-0"
                                     :class="{ 'bg-[#e2b714] text-[#323437]': message.isUser, 'bg-[#646669] text-[#d1d0c5]': !message.isUser }">
@@ -197,10 +238,10 @@
 
                 <!-- Input Area -->
                 <div class="border-t border-[#2c2e31]">
-                    <div class="max-w-3xl mx-auto p-4">
+                    <div class="max-w-3xl mx-auto p-2 md:p-4">
                         <!-- Attached Files Preview -->
                         <div v-if="attachedFiles.length > 0" class="mb-3">
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-xs">
+                            <div class="grid grid-cols-3 gap-2 max-w-xs">
                                 <div v-for="(file, index) in attachedFiles" :key="index" 
                                     class="relative group aspect-square bg-[#444654] rounded-md overflow-hidden border border-[#4E4F60]/20">
                                     <img :src="file.url" alt="Attached file" class="w-full h-full object-cover" />
@@ -217,7 +258,23 @@
                         <!-- Text Input Area -->
                         <div class="relative flex items-end gap-2 bg-[#2c2e31] rounded-xl shadow-lg p-2">
                             <!-- Attach Button -->
-                            <div class="relative">
+                            <div class="relative hidden md:block">
+                                <button class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" />
+                                    </svg>
+                                </button>
+                                <input 
+                                    type="file" 
+                                    @change="handleFileUpload" 
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    accept="image/*"
+                                    multiple
+                                />
+                            </div>
+
+                            <!-- Mobile Attach Button -->
+                            <div class="relative md:hidden">
                                 <button class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" />
@@ -237,7 +294,7 @@
                                     v-model="userInput"
                                     rows="1"
                                     placeholder="What do you want to know?"
-                                    class="w-full bg-transparent border-0 resize-none py-2 px-3 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0"
+                                    class="w-full bg-transparent border-0 resize-none py-2 px-2 md:px-3 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0 text-sm md:text-base"
                                     @input="autoGrow"
                                     ref="textarea"
                                 ></textarea>
@@ -683,6 +740,16 @@ const filteredChatGroups = computed(() => {
         )
     })).filter(group => group.chats.length > 0);
 });
+
+// Add to script section
+const isMobileMenuOpen = ref(false);
+
+// Add this method in the script section after toggleSearch
+const handleSearchBlur = () => {
+    if (!searchQuery.value) {
+        isSearchActive.value = false;
+    }
+};
 </script>
 
 <style>
@@ -933,5 +1000,50 @@ textarea {
 
 .w-5 {
     width: 1.25rem;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .message-content {
+        padding: 0.5rem;
+    }
+    
+    .input-area {
+        padding: 0.5rem;
+    }
+    
+    .message-actions {
+        flex-wrap: wrap;
+    }
+    
+    .message-text {
+        font-size: 0.9rem;
+    }
+}
+
+/* Prevent body scroll when mobile menu is open */
+.overflow-hidden {
+    overflow: hidden;
+}
+
+/* Mobile menu transition */
+.translate-x-0 {
+    transform: translateX(0);
+}
+
+.-translate-x-full {
+    transform: translateX(-100%);
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 768px) {
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .input-area button {
+        padding: 0.5rem;
+    }
 }
 </style>
