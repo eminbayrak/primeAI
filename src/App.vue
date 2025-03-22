@@ -1,47 +1,68 @@
 <template>
     <div class="h-screen flex">
         <!-- Sidebar -->
-        <div class="w-64 bg-[#202123] flex flex-col">
-            <!-- New Chat Button -->
-            <button @click="createNewChat"
-                class="m-3 flex py-3 px-3 items-center gap-3 rounded-md hover:bg-[#2A2B32] transition-colors duration-200 text-white cursor-pointer text-sm mb-2 border border-[#4E4F60]/20">
-                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                New chat
-            </button>
+        <div class="w-64 bg-[#202123] flex flex-col transition-all duration-200" :class="{ 'w-16': isSidebarCollapsed }">
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between p-3 border-b border-[#2c2e31]">
+                <!-- Toggle Sidebar Button -->
+                <button @click="isSidebarCollapsed = !isSidebarCollapsed"
+                    class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+
+                <!-- Search Button -->
+                <button v-if="!isSidebarCollapsed" @click="toggleSearch" 
+                    class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+
+                <!-- New Chat Button -->
+                <button @click="createNewChat"
+                    class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Search Input (shown when search is active) -->
+            <div v-if="isSearchActive && !isSidebarCollapsed" class="p-3">
+                <div class="relative">
+                    <input type="text" 
+                        v-model="searchQuery" 
+                        placeholder="Search chats..."
+                        class="w-full bg-[#2c2e31] text-[#d1d0c5] placeholder-[#646669] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#e2b714]"
+                    />
+                </div>
+            </div>
 
             <!-- Chat History -->
             <div class="flex-1 overflow-y-auto">
                 <div class="flex flex-col gap-2 text-gray-100 text-sm">
-                    <div v-for="group in chatGroups" :key="group.label" class="flex flex-col gap-1">
-                        <h3 class="text-xs text-gray-500 font-medium px-3 pt-3">{{ group.label }}</h3>
+                    <div v-for="group in filteredChatGroups" :key="group.label" class="flex flex-col gap-1">
+                        <h3 v-if="!isSidebarCollapsed" class="text-xs text-[#646669] font-medium px-3 pt-3">{{ group.label }}</h3>
                         <div v-for="chat in group.chats" :key="chat.id"
                             class="relative group"
                         >
                             <div @click="switchToChat(chat)"
-                                class="py-3 px-3 hover:bg-[#2A2B32] cursor-pointer rounded-md mx-2 text-[#ECECF1] flex items-center gap-2"
-                                :class="{ 'bg-[#2A2B32]': currentChat?.id === chat.id }">
-                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                class="py-3 px-3 hover:bg-[#2c2e31] cursor-pointer rounded-md mx-2 text-[#d1d0c5] flex items-center gap-2"
+                                :class="{ 'bg-[#2c2e31]': currentChat?.id === chat.id }">
+                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                 </svg>
-                                {{ chat.title }}
-                                
-                                <!-- Context Menu Trigger -->
-                                <button @click.stop="openContextMenu(chat)" 
-                                    class="ml-auto opacity-0 group-hover:opacity-100 hover:text-white p-1 rounded">
-                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="12" cy="12" r="1"></circle>
-                                        <circle cx="12" cy="5" r="1"></circle>
-                                        <circle cx="12" cy="19" r="1"></circle>
-                                    </svg>
-                                </button>
+                                <span v-if="!isSidebarCollapsed">{{ chat.title }}</span>
                             </div>
 
-                            <!-- Context Menu -->
-                            <div v-if="activeContextMenu === chat.id"
-                                class="absolute right-2 top-10 z-10 bg-[#202123] rounded-md shadow-lg border border-gray-700 py-2 min-w-[140px]">
+                            <!-- Context Menu (only show when sidebar is expanded) -->
+                            <div v-if="activeContextMenu === chat.id && !isSidebarCollapsed"
+                                class="absolute right-2 top-10 z-10 bg-[#202123] rounded-md shadow-lg border border-[#2c2e31] py-2 min-w-[140px]">
                                 <button @click.stop="shareChat(chat)" 
                                     class="w-full px-4 py-2 text-left text-[#ECECF1] hover:bg-[#2A2B32] flex items-center gap-3">
                                     <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
@@ -260,7 +281,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import * as Tesseract from 'tesseract.js';
 import { OcrService } from './services/OcrService';
 
@@ -624,6 +645,37 @@ const confirmRename = () => {
         newChatTitle.value = '';
     }
 };
+
+// Add these to the script setup section
+const isSidebarCollapsed = ref(false);
+const isSearchActive = ref(false);
+const searchQuery = ref('');
+
+const toggleSearch = () => {
+    isSearchActive.value = !isSearchActive.value;
+    if (isSearchActive.value) {
+        // Focus the search input when shown
+        nextTick(() => {
+            const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+            if (searchInput) searchInput.focus();
+        });
+    } else {
+        searchQuery.value = '';
+    }
+};
+
+// Add a computed property for filtered chat groups
+const filteredChatGroups = computed(() => {
+    if (!searchQuery.value) return chatGroups.value;
+    
+    return chatGroups.value.map(group => ({
+        label: group.label,
+        chats: group.chats.filter(chat => 
+            chat.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            chat.messages.some(msg => msg.text.toLowerCase().includes(searchQuery.value.toLowerCase()))
+        )
+    })).filter(group => group.chats.length > 0);
+});
 </script>
 
 <style>
