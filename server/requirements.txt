@@ -1,0 +1,13 @@
+flask>=2.0.0
+flask-cors>=3.0.10
+easyocr>=1.6.2
+numpy>=1.20.0
+opencv-python>=4.5.0
+Werkzeug>=2.0.0
+# Claude.ai integration requirements
+anthropic>=0.5.0
+python-dotenv>=1.0.0
+# For local model support
+transformers>=4.30.0
+torch>=2.0.0
+sentence-transformers>=2.2.2
