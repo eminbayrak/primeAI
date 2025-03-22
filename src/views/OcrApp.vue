@@ -1,16 +1,16 @@
 <template>
-    <div class="min-h-screen bg-gray-50 py-8">
+    <div class="min-h-screen bg-[#323437] py-8">
         <div class="container mx-auto px-4 max-w-4xl">
-            <h1 class="text-3xl font-bold text-center text-indigo-900 mb-6">Image to Text Converter</h1>
+            <h1 class="text-3xl font-bold text-center text-[#e2b714] mb-6">Image to Text Converter</h1>
 
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="bg-[#2c2e31] rounded-lg shadow-lg overflow-hidden border border-[#3c3e42]">
                 <!-- Input Section -->
-                <div class="p-6 border-b border-gray-200">
+                <div class="p-6 border-b border-[#3c3e42]">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-gray-800">Input</h2>
+                        <h2 class="text-xl font-semibold text-[#e2b714]">Input</h2>
                         <div class="flex items-center gap-2">
                             <select v-model="selectedEngine"
-                                class="bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                class="bg-[#2c2e31] border border-[#3c3e42] text-[#e2b714] py-2 px-3 rounded-md focus:ring-2 focus:ring-[#e2b714] focus:border-[#e2b714] transition-colors"
                                 :disabled="!isEasyOcrAvailable && selectedEngine === 'easyocr'">
                                 <option value="tesseract">Tesseract.js</option>
                                 <option value="easyocr" :disabled="!isEasyOcrAvailable">
@@ -19,7 +19,7 @@
                             </select>
                             <div v-if="!isEasyOcrAvailable && !checkingServer" class="inline-flex">
                                 <button @click="checkServerStatus"
-                                    class="text-red-500 hover:text-red-700 transition-colors" title="Retry connecting">
+                                    class="text-[#e2b714] hover:text-[#f8d03b] transition-colors" title="Retry connecting">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round" class="feather feather-refresh-cw">
@@ -38,8 +38,8 @@
                         <div @paste="handlePaste" tabindex="0" ref="pasteArea" @focus="isPasteFocused = true"
                             @blur="isPasteFocused = false" @click="focusPasteArea"
                             class="border-2 border-dashed rounded-lg h-48 flex justify-center items-center cursor-pointer transition-all"
-                            :class="{ 'border-indigo-400 ring-2 ring-indigo-200': isPasteFocused, 'border-gray-300': !isPasteFocused }">
-                            <div class="text-center text-gray-500">
+                            :class="{ 'border-[#e2b714]': isPasteFocused, 'border-[#3c3e42]': !isPasteFocused }">
+                            <div class="text-center text-[#646669]">
                                 <div class="text-3xl mb-2">📋</div>
                                 <p>Paste screenshot (Ctrl+V) or drag & drop images here</p>
                             </div>
@@ -48,17 +48,17 @@
                         <!-- Image Grid -->
                         <div v-if="images.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
                             <div v-for="(image, index) in images" :key="index" 
-                                class="relative group border rounded-lg overflow-hidden">
+                                class="relative group border border-[#3c3e42] rounded-lg overflow-hidden hover:border-[#e2b714] transition-colors">
                                 <img :src="image.url" alt="Uploaded image" class="w-full h-32 object-cover" />
                                 <div class="absolute top-2 right-2 flex gap-2">
                                     <button @click="removeImage(index)"
-                                        class="bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors">
+                                        class="bg-[#e2b714] text-[#323437] p-1 rounded-full hover:bg-[#f8d03b] transition-colors">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                                         </svg>
                                     </button>
                                 </div>
-                                <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1">
+                                <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-[#e2b714] text-xs p-1">
                                     Image {{ index + 1 }}
                                 </div>
                             </div>
@@ -66,15 +66,15 @@
 
                         <div class="flex justify-between items-center">
                             <label
-                                class="relative inline-flex items-center justify-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg font-medium cursor-pointer hover:bg-indigo-100 transition-colors">
+                                class="relative inline-flex items-center justify-center px-4 py-2 bg-[#e2b714] text-[#323437] rounded-lg font-medium cursor-pointer hover:bg-[#f8d03b] transition-colors">
                                 <span>Upload Images</span>
                                 <input type="file" accept="image/*" @change="handleImageUpload" ref="fileInput"
                                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" multiple />
                             </label>
 
                             <button @click="showOptions = !showOptions"
-                                class="flex items-center gap-1 text-gray-600 hover:text-indigo-700 transition-colors"
-                                :class="{ 'text-indigo-700': showOptions }">
+                                class="flex items-center gap-1 text-[#646669] hover:text-[#e2b714] transition-colors"
+                                :class="{ 'text-[#e2b714]': showOptions }">
                                 Options
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -91,9 +91,9 @@
                         :class="{ 'max-h-0 opacity-0': !showOptions, 'max-h-96 opacity-100 mt-6': showOptions }">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">Language</label>
+                                <label class="block text-sm font-medium text-[#e2b714]">Language</label>
                                 <select v-model="selectedLanguage"
-                                    class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    class="w-full bg-[#2c2e31] border border-[#3c3e42] text-[#e2b714] rounded-md py-2 px-3 focus:ring-2 focus:ring-[#e2b714] focus:border-[#e2b714]">
                                     <option value="eng">English</option>
                                     <option value="spa">Spanish</option>
                                     <option value="fra">French</option>
@@ -106,9 +106,9 @@
                             </div>
 
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">Recognition Quality</label>
+                                <label class="block text-sm font-medium text-[#e2b714]">Recognition Quality</label>
                                 <select v-model="recognitionQuality"
-                                    class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    class="w-full bg-[#2c2e31] border border-[#3c3e42] text-[#e2b714] rounded-md py-2 px-3 focus:ring-2 focus:ring-[#e2b714] focus:border-[#e2b714]">
                                     <option value="fast">Fast</option>
                                     <option value="standard">Standard</option>
                                     <option value="best">Best</option>
@@ -116,40 +116,40 @@
                             </div>
 
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">Preserve Layout</label>
+                                <label class="block text-sm font-medium text-[#e2b714]">Preserve Layout</label>
                                 <div class="flex items-center">
                                     <button @click="preserveLayout = !preserveLayout"
-                                        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                        :class="preserveLayout ? 'bg-indigo-600' : 'bg-gray-200'">
+                                        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#e2b714] focus:ring-offset-2"
+                                        :class="preserveLayout ? 'bg-[#e2b714]' : 'bg-[#3c3e42]'">
                                         <span class="sr-only">Toggle layout preservation</span>
                                         <span
-                                            class="pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                            class="pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-[#323437] shadow ring-0 transition duration-200 ease-in-out"
                                             :class="preserveLayout ? 'translate-x-5' : 'translate-x-0'"></span>
                                     </button>
-                                    <span class="ml-3 text-sm text-gray-500">{{ preserveLayout ? 'On' : 'Off' }}</span>
+                                    <span class="ml-3 text-sm text-[#646669]">{{ preserveLayout ? 'On' : 'Off' }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div v-if="images.length > 0" class="border-t border-gray-200 pt-4 space-y-2">
-                            <p class="text-sm font-medium text-gray-700">Image Processing</p>
+                        <div v-if="images.length > 0" class="border-t border-[#3c3e42] pt-4 space-y-2">
+                            <p class="text-sm font-medium text-[#e2b714]">Image Processing</p>
                             <div class="flex flex-wrap gap-2">
                                 <button @click="applyPreprocessing('grayscale')"
-                                    class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 rounded transition-colors">Grayscale</button>
+                                    class="px-3 py-1 text-sm bg-[#3c3e42] hover:bg-[#4c4e52] text-[#e2b714] rounded transition-colors">Grayscale</button>
                                 <button @click="applyPreprocessing('contrast')"
-                                    class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 rounded transition-colors">Contrast</button>
+                                    class="px-3 py-1 text-sm bg-[#3c3e42] hover:bg-[#4c4e52] text-[#e2b714] rounded transition-colors">Contrast</button>
                                 <button @click="applyPreprocessing('sharpen')"
-                                    class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 rounded transition-colors">Sharpen</button>
+                                    class="px-3 py-1 text-sm bg-[#3c3e42] hover:bg-[#4c4e52] text-[#e2b714] rounded transition-colors">Sharpen</button>
                                 <button @click="resetImage"
-                                    class="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">Reset</button>
+                                    class="px-3 py-1 text-sm bg-[#e2b714] text-[#323437] hover:bg-[#f8d03b] rounded transition-colors">Reset</button>
                             </div>
                         </div>
                     </div>
 
                     <button @click="processAllImages" :disabled="images.length === 0 || isProcessing"
-                        class="w-full mt-6 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="w-full mt-6 py-3 px-4 bg-[#e2b714] hover:bg-[#f8d03b] text-[#323437] font-medium rounded-md shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-[#e2b714] disabled:opacity-50 disabled:cursor-not-allowed">
                         <div v-if="isProcessing" class="flex justify-center items-center">
-                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-[#323437]" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4"></circle>
@@ -164,12 +164,12 @@
                 </div>
 
                 <!-- Results Section -->
-                <div v-if="results.length > 0" class="p-6 bg-gray-50">
+                <div v-if="results.length > 0" class="p-6 bg-[#2c2e31]">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-gray-800">Results</h2>
+                        <h2 class="text-xl font-semibold text-[#e2b714]">Results</h2>
                         <button @click="copyAllResults"
                             class="inline-flex items-center px-4 py-2 rounded-md transition-colors"
-                            :class="isCopied ? 'bg-green-100 text-green-800' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'">
+                            :class="isCopied ? 'bg-[#e2b714] text-[#323437]' : 'bg-[#3c3e42] hover:bg-[#4c4e52] text-[#e2b714]'">
                             <svg v-if="isCopied" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -186,24 +186,24 @@
 
                     <div v-for="(result, index) in results" :key="index" class="mb-6 last:mb-0">
                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="font-medium text-gray-700">Image {{ index + 1 }}</h3>
+                            <h3 class="font-medium text-[#e2b714]">Image {{ index + 1 }}</h3>
                             <div v-if="result.confidence > 0" class="px-3 py-1 rounded-full text-xs font-medium" :class="{
-                                'bg-green-100 text-green-800': result.confidence >= 0.8,
-                                'bg-yellow-100 text-yellow-800': result.confidence >= 0.5 && result.confidence < 0.8,
-                                'bg-red-100 text-red-800': result.confidence < 0.5
+                                'bg-[#e2b714] text-[#323437]': result.confidence >= 0.8,
+                                'bg-[#f8d03b] text-[#323437]': result.confidence >= 0.5 && result.confidence < 0.8,
+                                'bg-[#e2b714]/50 text-[#323437]': result.confidence < 0.5
                             }">
                                 {{ Math.round(result.confidence * 100) }}% confidence
                             </div>
                         </div>
-                        <div class="bg-white border border-gray-300 rounded-lg">
-                            <pre class="p-4 text-sm font-mono text-gray-800 whitespace-pre-wrap break-words max-h-60 overflow-y-auto">{{ result.text }}</pre>
+                        <div class="bg-[#323437] border border-[#3c3e42] rounded-lg">
+                            <pre class="p-4 text-sm font-mono text-[#e2b714] whitespace-pre-wrap break-words max-h-60 overflow-y-auto">{{ result.text }}</pre>
                         </div>
                     </div>
 
-                    <div v-if="errorMessage" class="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+                    <div v-if="errorMessage" class="mt-4 bg-[#e2b714]/10 border-l-4 border-[#e2b714] p-4 rounded-md">
                         <div class="flex">
                             <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                <svg class="h-5 w-5 text-[#e2b714]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                     fill="currentColor">
                                     <path fill-rule="evenodd"
                                         d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -211,7 +211,7 @@
                                 </svg>
                             </div>
                             <div class="ml-3">
-                                <p class="text-sm text-red-700">{{ errorMessage }}</p>
+                                <p class="text-sm text-[#e2b714]">{{ errorMessage }}</p>
                             </div>
                         </div>
                     </div>
