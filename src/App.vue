@@ -36,7 +36,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
-            </div>
+                </div>
 
             <!-- Search Input (shown when search is active) -->
             <div v-if="isSearchActive" class="p-3 border-b border-[#2c2e31]">
@@ -51,7 +51,7 @@
                         class="w-full bg-[#2A2B32] text-[#ECECF1] placeholder-[#646669] rounded-lg pl-10 pr-3 py-2 focus:outline-none"
                         @blur="handleSearchBlur"
                     />
-                </div>
+            </div>
             </div>
 
             <!-- Chat History -->
@@ -155,7 +155,7 @@
                         </svg>
                     </button>
                     <span class="text-[#ECECF1] truncate">{{ currentChat?.title || 'New Chat' }}</span>
-                </div>
+    </div>
 
                 <!-- Right Side -->
                 <div class="flex items-center gap-2">
@@ -552,7 +552,7 @@ const sendMessage = async () => {
         if (textarea.value) {
             textarea.value.style.height = 'auto';
         }
-    } catch (error) {
+            } catch (error) {
         console.error('Failed to send message:', error);
     } finally {
         isProcessing.value = false;
@@ -575,9 +575,9 @@ const handlePaste = (event: ClipboardEvent) => {
     }
 };
 
-onMounted(() => {
-    document.addEventListener('paste', handlePaste);
-    
+        onMounted(() => {
+            document.addEventListener('paste', handlePaste);
+
     // Load chats from localStorage if available
     const savedChats = localStorage.getItem('chats');
     if (savedChats) {
@@ -593,10 +593,10 @@ onMounted(() => {
         }));
     }
 
-    return () => {
-        document.removeEventListener('paste', handlePaste);
-    };
-});
+            return () => {
+                document.removeEventListener('paste', handlePaste);
+            };
+        });
 
 // Add watch to save chats to localStorage
 watch(chats, (newChats) => {
@@ -753,16 +753,20 @@ const handleSearchBlur = () => {
 </script>
 
 <style>
-:root {
-    --bg-primary: #1a1b1e;
-    --bg-chat: #2c2e31;
-    --bg-button: #343541;
-    --bg-button-hover: #40414F;
-    --text-primary: #d1d0c5;
-    --text-secondary: #646669;
-    --accent: #e2b714;
-    --accent-hover: #e2b714cc;
-    --border-color: #2c2e31;
+@font-face {
+    font-family: 'MonoLisa';
+    src: url('@/assets/fonts/e11418ac562b8ac1-s.p.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MonoLisa';
+    src: url('@/assets/fonts/66f30814ff6d7cdf.p.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
 }
 
 * {
@@ -771,101 +775,71 @@ const handleSearchBlur = () => {
     padding: 0;
 }
 
+:root {
+    font-family: 'MonoLisa', monospace;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "liga" 0;
+    letter-spacing: -0.02em;
+}
+
 body {
-    font-family: "Roboto Mono", monospace;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+    font-family: 'MonoLisa', monospace;
+    background-color: var(--bgPrimary);
+    color: var(--textPrimary);
     line-height: 1.6;
+    font-size: 16px;
+}
+
+/* Heading styles */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'MonoLisa', monospace;
+    font-weight: 700;
+    letter-spacing: -0.03em;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 4px;
+    height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-primary);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
-}
-
-/* Textarea styles */
-textarea {
-    min-height: 24px;
-    max-height: 200px;
-    font-size: 1rem;
-    line-height: 1.5;
-}
-
-textarea::placeholder {
-    color: #8e8e8e;
-}
-
-/* Message styles */
-.message {
-    border-bottom: none;
-}
-
-.bg-\[\#343541\] {
-    background-color: var(--bg-primary);
-    border-bottom: none;
-}
-
-.bg-\[\#444654\] {
-    background-color: var(--bg-primary);
-    border-bottom: none;
-}
-
-/* Improve text colors */
-.text-\[\#D1D5DB\] {
-    color: var(--text-primary);
-}
-
-/* Add hover effects for action buttons */
-.hover\:bg-gray-700\/50:hover {
-    background-color: var(--accent-hover);
-    color: var(--bg-primary);
-}
-
-/* Improve scrollbar styling */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(217,217,227,.8);
-    border-radius: 5px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
 }
 
-/* Avatar styles */
-.avatar {
-    width: 30px;
-    height: 30px;
+::-webkit-scrollbar-thumb {
+    background: var(--borderPrimary);
     border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 500;
-    flex-shrink: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--textTertiary);
+}
+
+/* Input and textarea styles */
+input, textarea {
+    font-family: 'MonoLisa', monospace;
+    font-size: 16px;
+    line-height: 1.5;
+    background-color: var(--bgInput);
+    color: var(--textPrimary);
+    border: 1px solid var(--borderSecondary);
+    border-radius: 4px;
+    padding: 12px 16px;
+    letter-spacing: -0.02em;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--textTertiary);
 }
 
 /* Button styles */
 button {
+    font-family: 'MonoLisa', monospace;
+    font-size: 16px;
     transition: all 0.2s ease;
-    font-size: 0.875rem;
+    letter-spacing: -0.02em;
 }
 
 button:disabled {
@@ -873,177 +847,96 @@ button:disabled {
     cursor: not-allowed;
 }
 
-button.bg-\[\#343541\] {
-    background-color: var(--bg-button);
+/* Message styles */
+.message {
+    font-size: 16px;
+    line-height: 1.6;
+    letter-spacing: -0.02em;
 }
 
-button.hover\:bg-\[\#40414F\]:hover {
-    background-color: var(--bg-button-hover);
-}
-
-/* Image preview styles */
-.image-preview {
+/* Code block styles */
+pre, code {
+    font-family: 'MonoLisa', monospace;
+    font-size: 15px;
+    line-height: 1.45;
+    background-color: var(--bgTertiary);
     border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
+    padding: 0.2em 0.4em;
+    letter-spacing: -0.02em;
 }
 
-.image-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+pre code {
+    padding: 0;
+    background-color: transparent;
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
-    .message-content {
-        padding: 0.75rem;
-    }
-    
-    .avatar {
-        width: 24px;
-        height: 24px;
-        font-size: 12px;
-    }
+/* Link styles */
+a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-.overflow-y-auto {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
+a:hover {
+    color: var(--accentHover);
 }
 
-.overflow-y-auto::-webkit-scrollbar {
-    width: 6px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 20px;
-}
-
-/* Prevent text selection on buttons */
-button {
-    user-select: none;
-}
-
-/* Improve textarea appearance */
-textarea {
-    min-height: 24px;
-    max-height: 200px;
-}
-
-/* Mobile adjustments */
+/* Mobile styles */
 @media (max-width: 768px) {
-    .w-64 {
-        display: none;
+    body {
+        font-size: 15px;
+    }
+
+    input, textarea, button {
+        font-size: 15px;
     }
 }
 
-/* Add these new styles */
-.group:hover .group-hover\:opacity-100 {
-    opacity: 1;
+/* Add these utility classes */
+.bg-primary { background-color: var(--bgPrimary); }
+.bg-secondary { background-color: var(--bgSecondary); }
+.bg-tertiary { background-color: var(--bgTertiary); }
+.bg-input { background-color: var(--bgInput); }
+.bg-hover { background-color: var(--bgHover); }
+.bg-sidebar { background-color: var(--bgSidebar); }
+.bg-context-menu { background-color: var(--bgContextMenu); }
+
+.border-primary { border-color: var(--borderPrimary); }
+.border-secondary { border-color: var(--borderSecondary); }
+
+.text-primary { color: var(--textPrimary); }
+.text-secondary { color: var(--textSecondary); }
+.text-tertiary { color: var(--textTertiary); }
+
+.text-accent { color: var(--accent); }
+.bg-accent { background-color: var(--accent); }
+.hover-bg-accent:hover { background-color: var(--accentHover); }
+
+/* Minutes to launch style */
+.minutes-to-launch {
+    font-family: 'MonoLisa', monospace;
+    font-size: 14px;
+    color: var(--textTertiary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
-.group-hover\:opacity-100 {
-    transition: opacity 0.2s ease;
+/* Quickstart heading style */
+.quickstart-heading {
+    font-family: 'MonoLisa', monospace;
+    font-size: 64px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--textPrimary);
 }
 
-/* Custom scrollbar for message content */
-.custom-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 10px;
-}
-
-/* Message text highlighting */
-.border-b-2.border-red-500 {
-    border-style: solid;
-    border-color: rgb(239, 68, 68);
-}
-
-/* Add these new styles */
-.rounded-xl {
-    border-radius: 1rem;
-}
-
-/* Improve button spacing */
-.gap-2 {
-    gap: 0.75rem;
-}
-
-/* Custom padding for input container */
-.p-2 {
-    padding: 0.75rem;
-}
-
-/* Improve icon sizes */
-.h-5 {
-    height: 1.25rem;
-}
-
-.w-5 {
-    width: 1.25rem;
-}
-
-/* Mobile Responsive Styles */
-@media (max-width: 768px) {
-    .message-content {
-        padding: 0.5rem;
-    }
-    
-    .input-area {
-        padding: 0.5rem;
-    }
-    
-    .message-actions {
-        flex-wrap: wrap;
-    }
-    
-    .message-text {
-        font-size: 0.9rem;
-    }
-}
-
-/* Prevent body scroll when mobile menu is open */
-.overflow-hidden {
-    overflow: hidden;
-}
-
-/* Mobile menu transition */
-.translate-x-0 {
-    transform: translateX(0);
-}
-
-.-translate-x-full {
-    transform: translateX(-100%);
-}
-
-/* Improve touch targets on mobile */
-@media (max-width: 768px) {
-    button {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    .input-area button {
-        padding: 0.5rem;
-    }
+/* Description text style */
+.description-text {
+    font-family: 'MonoLisa', monospace;
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--textSecondary);
+    letter-spacing: -0.02em;
 }
 </style>
