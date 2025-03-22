@@ -118,60 +118,46 @@
                         <h1 class="text-4xl font-semibold text-center text-[#ECECF1] mb-6">What can I help with?</h1>
                     </div>
                     <div v-else v-for="(message, index) in currentChat.messages" :key="index" 
-                        :class="{ 'bg-[#343541]': message.isUser, 'bg-[#444654]': !message.isUser }">
-                        <div class="max-w-3xl mx-auto px-4 py-6">
-                            <div class="flex" :class="{ 'justify-end': message.isUser, 'justify-start': !message.isUser }">
-                                <!-- Message Content Container -->
-                                <div class="flex gap-4 max-w-[90%]" :class="{ 'flex-row-reverse': message.isUser }">
-                                    <!-- Avatar -->
-                                    <div class="w-8 h-8 rounded-sm flex items-center justify-center text-sm shrink-0"
-                                        :class="{ 'bg-[#5436DA]': message.isUser, 'bg-[#10A37F]': !message.isUser }">
-                                        {{ message.isUser ? 'U' : 'C' }}
-                                    </div>
+                        class="py-4 px-4">
+                        <div class="flex" :class="{ 'justify-end': message.isUser, 'justify-start': !message.isUser }">
+                            <!-- Message Content Container -->
+                            <div class="flex gap-4 max-w-[90%]" :class="{ 'flex-row-reverse': message.isUser }">
+                                <!-- Avatar -->
+                                <div class="w-8 h-8 rounded-sm flex items-center justify-center text-sm shrink-0"
+                                    :class="{ 'bg-[#e2b714] text-[#323437]': message.isUser, 'bg-[#646669] text-[#d1d0c5]': !message.isUser }">
+                                    {{ message.isUser ? 'U' : 'C' }}
+                                </div>
 
-                                    <!-- Message Content -->
-                                    <div class="flex-1 min-h-[20px]" :class="{ 'flex justify-end': message.isUser }">
-                                        <div class="group relative text-[#D1D5DB]"
-                                            :class="{ 
-                                                'bg-[#19C37D] text-white rounded-2xl px-4 py-3': message.isUser,
-                                                'text-[#ECECF1]': !message.isUser 
-                                            }">
-                                            <!-- Message Text -->
-                                            <div class="max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
-                                                <p class="whitespace-pre-wrap text-[16px] leading-6">
-                                                    {{ message.text }}
-                                                </p>
-                                            </div>
-                                            
-                                            <!-- Edit Button (Top Right) - Only for agent messages -->
-                                            <div v-if="!message.isUser" 
-                                                class="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button @click="editMessage(index)"
-                                                    class="p-1.5 text-gray-400 hover:text-[#ECECF1] rounded-md">
-                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M12 20h9"></path>
-                                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                            <!-- Bottom Action Buttons - Only for agent messages -->
-                                            <div v-if="!message.isUser" class="flex items-center gap-2 mt-4 text-gray-400">
-                                                <button @click="copyMessage(message.text)"
-                                                    class="flex items-center gap-2 rounded-md hover:bg-gray-700/50 hover:text-white px-3 py-1 text-xs"
-                                                    :class="{ 'text-green-500': message.isCopied }">
-                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                                                    Copy
-                                                </button>
-                                                <button @click="regenerateResponse(index)"
-                                                    class="flex items-center gap-2 rounded-md hover:bg-gray-700/50 hover:text-white px-3 py-1 text-xs">
-                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                                                        <path d="M3 3v5h5"></path>
-                                                    </svg>
-                                                    Regenerate
-                                                </button>
-                                            </div>
+                                <!-- Message Content -->
+                                <div class="flex-1 min-h-[20px]" :class="{ 'flex justify-end': message.isUser }">
+                                    <div class="group relative"
+                                        :class="{ 
+                                            'bg-[#2c2e31] text-[#d1d0c5] rounded-lg px-4 py-3': message.isUser,
+                                            'text-[#d1d0c5]': !message.isUser 
+                                        }">
+                                        <!-- Message Text -->
+                                        <div class="max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                                            <p class="whitespace-pre-wrap text-[16px] leading-6">
+                                                {{ message.text }}
+                                            </p>
+                                        </div>
+                                        
+                                        <!-- Action Buttons - Only for agent messages -->
+                                        <div v-if="!message.isUser" class="flex items-center gap-2 mt-4 text-[#646669]">
+                                            <button @click="copyMessage(message.text)"
+                                                class="flex items-center gap-2 rounded-md hover:bg-[#e2b714] hover:text-[#323437] px-3 py-1 text-xs transition-colors"
+                                                :class="{ 'text-[#e2b714]': message.isCopied }">
+                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                                                Copy
+                                            </button>
+                                            <button @click="regenerateResponse(index)"
+                                                class="flex items-center gap-2 rounded-md hover:bg-[#e2b714] hover:text-[#323437] px-3 py-1 text-xs transition-colors">
+                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                                    <path d="M3 3v5h5"></path>
+                                                </svg>
+                                                Regenerate
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -181,7 +167,7 @@
                 </div>
 
                 <!-- Input Area -->
-                <div class="border-t border-[#4E4F60]/20 bg-[#343541]">
+                <div class="border-t border-[#2c2e31] bg-[#323437]">
                     <div class="max-w-3xl mx-auto p-4">
                         <!-- Attached Files Preview -->
                         <div v-if="attachedFiles.length > 0" class="mb-3">
@@ -200,13 +186,13 @@
                         </div>
 
                         <!-- Text Input Area -->
-                        <div class="relative flex items-end gap-2 bg-[#40414F] rounded-xl shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#4E4F60]/20">
+                        <div class="relative flex items-end gap-2 bg-[#2c2e31] rounded-lg shadow-lg">
                             <div class="flex-1">
                                 <textarea 
                                     v-model="userInput"
                                     rows="1"
                                     placeholder="Message ChatGPT..."
-                                    class="w-full bg-transparent border-0 resize-none py-4 px-3 text-[#ECECF1] placeholder-[#8E8EA0] focus:outline-none focus:ring-0"
+                                    class="w-full bg-transparent border-0 resize-none py-4 px-3 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0"
                                     @input="autoGrow"
                                     ref="textarea"
                                 ></textarea>
@@ -215,7 +201,7 @@
                             <!-- Action Buttons -->
                             <div class="flex items-center gap-2 pr-2">
                                 <!-- Attach Button -->
-                                <button class="p-2 text-[#8E8EA0] hover:text-[#ECECF1] transition-colors relative">
+                                <button class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors relative">
                                     <input 
                                         type="file" 
                                         @change="handleFileUpload" 
@@ -232,7 +218,7 @@
                                 <button 
                                     @click="sendMessage"
                                     :disabled="!canSend"
-                                    class="p-2 text-[#8E8EA0] hover:text-[#ECECF1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
                                     </svg>
@@ -642,14 +628,13 @@ const confirmRename = () => {
 
 <style>
 :root {
-    --primary-color: #10A37F;
-    --primary-light: #1A7F64;
-    --primary-dark: #0D5D4A;
-    --text-light: #ECECF1;
-    --text-muted: #8E8EA0;
-    --bg-dark: #343541;
-    --bg-darker: #444654;
-    --border-color: #565869;
+    --bg-primary: #323437;
+    --bg-chat: #2c2e31;
+    --text-primary: #d1d0c5;
+    --text-secondary: #646669;
+    --accent: #e2b714;
+    --accent-hover: #e2b714cc;
+    --border-color: #2c2e31;
 }
 
 * {
@@ -659,9 +644,9 @@ const confirmRename = () => {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: var(--bg-dark);
-    color: var(--text-light);
+    font-family: "Roboto Mono", monospace;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     line-height: 1.6;
 }
 
@@ -671,7 +656,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-dark);
+    background: var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -680,7 +665,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
+    background: var(--text-secondary);
 }
 
 /* Textarea styles */
@@ -693,27 +678,28 @@ textarea {
 
 /* Message styles */
 .message {
-    border-bottom: 1px solid rgba(32,33,35,0.5);
+    border-bottom: none;
 }
 
 .bg-\[\#343541\] {
-    background-color: rgb(52,53,65);
-    border-bottom: 1px solid rgba(32,33,35,.5);
+    background-color: var(--bg-primary);
+    border-bottom: none;
 }
 
 .bg-\[\#444654\] {
-    background-color: rgb(68,70,84);
-    border-bottom: 1px solid rgba(32,33,35,.5);
+    background-color: var(--bg-primary);
+    border-bottom: none;
 }
 
 /* Improve text colors */
 .text-\[\#D1D5DB\] {
-    color: rgb(209,213,219);
+    color: var(--text-primary);
 }
 
 /* Add hover effects for action buttons */
 .hover\:bg-gray-700\/50:hover {
-    background-color: rgba(55,65,81,0.5);
+    background-color: var(--accent-hover);
+    color: var(--bg-primary);
 }
 
 /* Improve scrollbar styling */
