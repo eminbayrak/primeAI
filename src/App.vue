@@ -30,7 +30,7 @@
                         <line x1="8" y1="12" x2="16" y2="12"></line>
                     </svg>
                 </button>
-            </div>
+                </div>
 
             <!-- Search Input (shown when search is active) -->
             <div v-if="isSearchActive && !isSidebarCollapsed" class="p-3">
@@ -40,7 +40,7 @@
                         placeholder="Search chats..."
                         class="w-full bg-[#2c2e31] text-[#d1d0c5] placeholder-[#646669] rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#e2b714]"
                     />
-                </div>
+            </div>
             </div>
 
             <!-- Chat History -->
@@ -57,15 +57,23 @@
                                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                 </svg>
-                                <span v-if="!isSidebarCollapsed">{{ chat.title }}</span>
+                                <span v-if="!isSidebarCollapsed" class="flex-1 truncate">{{ chat.title }}</span>
+                                <!-- Context Menu Button -->
+                                <button v-if="!isSidebarCollapsed" 
+                                    @click.stop="openContextMenu(chat)"
+                                    class="p-1 text-[#646669] hover:text-[#e2b714] transition-colors opacity-0 group-hover:opacity-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                    </svg>
+                                </button>
                             </div>
 
-                            <!-- Context Menu (only show when sidebar is expanded) -->
+                            <!-- Context Menu -->
                             <div v-if="activeContextMenu === chat.id && !isSidebarCollapsed"
                                 class="absolute right-2 top-10 z-10 bg-[#202123] rounded-md shadow-lg border border-[#2c2e31] py-2 min-w-[140px]">
                                 <button @click.stop="shareChat(chat)" 
                                     class="w-full px-4 py-2 text-left text-[#ECECF1] hover:bg-[#2A2B32] flex items-center gap-3">
-                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
                                         <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
                                         <polyline points="16 6 12 2 8 6"></polyline>
                                         <line x1="12" y1="2" x2="12" y2="15"></line>
@@ -74,7 +82,7 @@
                                 </button>
                                 <button @click.stop="startRenameChat(chat)" 
                                     class="w-full px-4 py-2 text-left text-[#ECECF1] hover:bg-[#2A2B32] flex items-center gap-3">
-                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
                                         <path d="M12 20h9"></path>
                                         <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                                     </svg>
@@ -82,7 +90,7 @@
                                 </button>
                                 <button @click.stop="archiveChat(chat)" 
                                     class="w-full px-4 py-2 text-left text-[#ECECF1] hover:bg-[#2A2B32] flex items-center gap-3">
-                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
                                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                         <line x1="16" y1="2" x2="16" y2="6"></line>
                                         <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -92,7 +100,7 @@
                                 </button>
                                 <button @click.stop="deleteChat(chat)" 
                                     class="w-full px-4 py-2 text-left text-red-500 hover:bg-[#2A2B32] flex items-center gap-3">
-                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
                                         <polyline points="3 6 5 6 21 6"></polyline>
                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                     </svg>
@@ -188,7 +196,7 @@
                 </div>
 
                 <!-- Input Area -->
-                <div class="border-t border-[#2c2e31] bg-[#323437]">
+                <div class="border-t border-[#2c2e31]">
                     <div class="max-w-3xl mx-auto p-4">
                         <!-- Attached Files Preview -->
                         <div v-if="attachedFiles.length > 0" class="mb-3">
@@ -207,44 +215,43 @@
                         </div>
 
                         <!-- Text Input Area -->
-                        <div class="relative flex items-end gap-2 bg-[#2c2e31] rounded-lg shadow-lg">
+                        <div class="relative flex items-end gap-2 bg-[#2c2e31] rounded-xl shadow-lg p-2">
+                            <!-- Attach Button -->
+                            <div class="relative">
+                                <button class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" />
+                                    </svg>
+                                </button>
+                                <input 
+                                    type="file" 
+                                    @change="handleFileUpload" 
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    accept="image/*"
+                                    multiple
+                                />
+                            </div>
+
                             <div class="flex-1">
                                 <textarea 
                                     v-model="userInput"
                                     rows="1"
-                                    placeholder="Message ChatGPT..."
-                                    class="w-full bg-transparent border-0 resize-none py-4 px-3 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0"
+                                    placeholder="What do you want to know?"
+                                    class="w-full bg-transparent border-0 resize-none py-2 px-3 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0"
                                     @input="autoGrow"
                                     ref="textarea"
                                 ></textarea>
                             </div>
 
-                            <!-- Action Buttons -->
-                            <div class="flex items-center gap-2 pr-2">
-                                <!-- Attach Button -->
-                                <button class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors relative">
-                                    <input 
-                                        type="file" 
-                                        @change="handleFileUpload" 
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        accept="image/*"
-                                        multiple
-                                    />
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-
-                                <!-- Send Button -->
-                                <button 
-                                    @click="sendMessage"
-                                    :disabled="!canSend"
-                                    class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
+                            <!-- Send Button -->
+                            <button 
+                                @click="sendMessage"
+                                :disabled="!canSend"
+                                class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -680,8 +687,10 @@ const filteredChatGroups = computed(() => {
 
 <style>
 :root {
-    --bg-primary: #323437;
+    --bg-primary: #1a1b1e;
     --bg-chat: #2c2e31;
+    --bg-button: #343541;
+    --bg-button-hover: #40414F;
     --text-primary: #d1d0c5;
     --text-secondary: #646669;
     --accent: #e2b714;
@@ -724,8 +733,12 @@ body {
 textarea {
     min-height: 24px;
     max-height: 200px;
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1.5;
+}
+
+textarea::placeholder {
+    color: #8e8e8e;
 }
 
 /* Message styles */
@@ -785,11 +798,20 @@ textarea {
 /* Button styles */
 button {
     transition: all 0.2s ease;
+    font-size: 0.875rem;
 }
 
 button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+button.bg-\[\#343541\] {
+    background-color: var(--bg-button);
+}
+
+button.hover\:bg-\[\#40414F\]:hover {
+    background-color: var(--bg-button-hover);
 }
 
 /* Image preview styles */
@@ -887,5 +909,29 @@ textarea {
 .border-b-2.border-red-500 {
     border-style: solid;
     border-color: rgb(239, 68, 68);
+}
+
+/* Add these new styles */
+.rounded-xl {
+    border-radius: 1rem;
+}
+
+/* Improve button spacing */
+.gap-2 {
+    gap: 0.75rem;
+}
+
+/* Custom padding for input container */
+.p-2 {
+    padding: 0.75rem;
+}
+
+/* Improve icon sizes */
+.h-5 {
+    height: 1.25rem;
+}
+
+.w-5 {
+    width: 1.25rem;
 }
 </style>
