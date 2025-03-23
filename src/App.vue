@@ -136,17 +136,18 @@
             <div class="h-12 border-b border-[#4E4F60]/20 flex items-center justify-between px-4 bg-[#343541]">
                 <!-- Left Side -->
                 <div class="flex items-center gap-2">
-                    <!-- Menu Button (shown when sidebar is collapsed) -->
+                    <!-- Menu Button (shown when sidebar is collapsed on desktop) -->
                     <button @click="isSidebarCollapsed = false"
-                        v-if="isSidebarCollapsed"
-                        class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
+                        v-if="isSidebarCollapsed && !isMobileMenuOpen"
+                        class="hidden md:block p-2 text-[#646669] hover:text-[#e2b714] transition-colors rounded-md">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
                         </svg>
                     </button>
-                    <!-- Mobile Menu Button -->
+                    <!-- Mobile Menu Button (only shown on mobile when sidebar is closed) -->
                     <button @click="isMobileMenuOpen = !isMobileMenuOpen"
-                        class="md:hidden p-2 hover:bg-[#2A2B32] rounded-md">
+                        class="md:hidden p-2 hover:bg-[#2A2B32] rounded-md"
+                        v-if="!isMobileMenuOpen">
                         <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24" 
                             class="h-6 w-6 text-[#ECECF1]">
                             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -155,7 +156,7 @@
                         </svg>
                     </button>
                     <span class="text-[#ECECF1] truncate">{{ currentChat?.title || 'New Chat' }}</span>
-    </div>
+                </div>
 
                 <!-- Right Side -->
                 <div class="flex items-center gap-2">
