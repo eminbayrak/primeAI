@@ -187,48 +187,44 @@
                             What can I help with?
                         </h1>
                     </div>
-                    <div v-else v-for="(message, index) in currentChat.messages" :key="index" 
-                        class="py-4 px-2 md:px-4">
-                        <div class="flex" :class="{ 'justify-end': message.isUser, 'justify-start': !message.isUser }">
-                            <!-- Message Content Container -->
-                            <div class="flex gap-2 md:gap-4 max-w-[95%] md:max-w-[90%]" 
-                                :class="{ 'flex-row-reverse': message.isUser }">
-                                <!-- Avatar -->
-                                <div class="w-8 h-8 rounded-sm flex items-center justify-center text-sm shrink-0"
-                                    :class="{ 'bg-[#e2b714] text-[#323437]': message.isUser, 'bg-[#646669] text-[#d1d0c5]': !message.isUser }">
-                                    {{ message.isUser ? 'U' : 'C' }}
-                                </div>
-
-                                <!-- Message Content -->
-                                <div class="flex-1 min-h-[20px]" :class="{ 'flex justify-end': message.isUser }">
-                                    <div class="group relative"
-                                        :class="{ 
-                                            'bg-[#2c2e31] text-[#d1d0c5] rounded-lg px-4 py-3': message.isUser,
-                                            'text-[#d1d0c5]': !message.isUser 
-                                        }">
-                                        <!-- Message Text -->
-                                        <div class="max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
-                                            <p class="whitespace-pre-wrap text-[16px] leading-6">
-                                                {{ message.text }}
-                                            </p>
-                                        </div>
-                                        
-                                        <!-- Action Buttons - Only for agent messages -->
-                                        <div v-if="!message.isUser" class="flex items-center gap-2 mt-4 text-[#646669]">
-                                            <button @click="copyMessage(message.text)"
-                                                class="flex items-center gap-2 rounded-md hover:bg-[#e2b714] hover:text-[#323437] px-3 py-1 text-xs transition-colors"
-                                                :class="{ 'text-[#e2b714]': message.isCopied }">
-                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-                                                Copy
-                                            </button>
-                                            <button @click="regenerateResponse(index)"
-                                                class="flex items-center gap-2 rounded-md hover:bg-[#e2b714] hover:text-[#323437] px-3 py-1 text-xs transition-colors">
-                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
-                                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                                                    <path d="M3 3v5h5"></path>
-                                                </svg>
-                                                Regenerate
-                                            </button>
+                    <div v-else class="max-w-3xl mx-auto w-full px-4 md:px-8">
+                        <div v-for="(message, index) in currentChat.messages" :key="index" 
+                            class="py-4">
+                            <div class="flex" :class="{ 'justify-end': message.isUser, 'justify-start': !message.isUser }">
+                                <!-- Message Content Container -->
+                                <div class="flex gap-2 md:gap-4 max-w-[85%] md:max-w-[75%]" 
+                                    :class="{ 'flex-row-reverse': message.isUser }">
+                                    <!-- Message Content -->
+                                    <div class="flex-1 min-h-[20px]" :class="{ 'flex justify-end': message.isUser }">
+                                        <div class="group relative px-4 py-3"
+                                            :class="{ 
+                                                'bg-[#2c2e31] text-[#d1d0c5] rounded-lg rounded-br-sm': message.isUser,
+                                                'text-[#d1d0c5]': !message.isUser
+                                            }">
+                                            <!-- Message Text -->
+                                            <div class="max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                                                <p class="whitespace-pre-wrap text-[16px] leading-6">
+                                                    {{ message.text }}
+                                                </p>
+                                            </div>
+                                            
+                                            <!-- Action Buttons - Only for agent messages -->
+                                            <div v-if="!message.isUser" class="flex items-center gap-2 mt-4 text-[#646669]">
+                                                <button @click="copyMessage(message.text)"
+                                                    class="flex items-center gap-2 rounded-md hover:bg-[#2c2e31] hover:text-[#e2b714] px-3 py-1 text-xs transition-colors"
+                                                    :class="{ 'text-[#e2b714]': message.isCopied }">
+                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                                                    Copy
+                                                </button>
+                                                <button @click="regenerateResponse(index)"
+                                                    class="flex items-center gap-2 rounded-md hover:bg-[#e2b714] hover:text-[#323437] px-3 py-1 text-xs transition-colors">
+                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                                        <path d="M3 3v5h5"></path>
+                                                    </svg>
+                                                    Regenerate
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
