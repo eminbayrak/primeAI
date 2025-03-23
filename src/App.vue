@@ -257,45 +257,82 @@
                         </div>
 
                         <!-- Text Input Area -->
-                        <div class="relative flex items-center gap-2 bg-[#2c2e31] rounded-2xl p-3">
-                            <!-- Attach Button -->
-                            <div class="relative">
-                                <button class="p-1 text-[#646669] hover:text-[#e2b714] transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                    </svg>
-                                </button>
-                                <input 
-                                    type="file" 
-                                    @change="handleFileUpload" 
-                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    accept="image/*"
-                                    multiple
-                                />
-                            </div>
+                        <form class="w-full">
+                            <div class="relative z-[1] flex h-full max-w-full flex-1 flex-col">
+                                <div class="group relative z-[1] flex w-full items-center">
+                                    <div class="w-full">
+                                        <div class="flex w-full cursor-text flex-col overflow-clip rounded-3xl bg-[#303030] shadow-[0_2px_12px_0px_rgba(0,0,0,0.04),_0_9px_9px_0px_rgba(0,0,0,0.01),_0_2px_5px_0px_rgba(0,0,0,0.06)]">
+                                            <div class="px-3 py-1">
+                                                <div class="flex flex-col justify-start">
+                                                    <div class="flex min-h-[44px] items-start pl-1">
+                                                        <div class="min-w-0 max-w-full flex-1">
+                                                            <textarea 
+                                                                v-model="userInput"
+                                                                rows="1"
+                                                                placeholder="Ask anything"
+                                                                class="block h-10 w-full resize-none border-0 bg-transparent px-0 py-2 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0 text-sm md:text-base"
+                                                                @input="autoGrow"
+                                                                ref="textarea"
+                                                            ></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-2 mt-1 flex items-center justify-between">
+                                                    <!-- Left side buttons -->
+                                                    <div class="flex gap-x-1.5">
+                                                        <!-- Add button with file input -->
+                                                        <div class="relative">
+                                                            <button @click="triggerFileInput" type="button" class="flex h-9 w-9 items-center justify-center rounded-full border border-[#4E4F60]/20 text-[#646669] hover:bg-[#404040] transition-colors">
+                                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-[18px] w-[18px]">
+                                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                                </svg>
+                                                            </button>
+                                                            <input 
+                                                                type="file" 
+                                                                ref="fileInput"
+                                                                @change="handleFileUpload" 
+                                                                class="hidden"
+                                                                accept="image/*"
+                                                                multiple
+                                                            />
+                                                        </div>
 
-                            <div class="flex-1">
-                                <textarea 
-                                    v-model="userInput"
-                                    rows="1"
-                                    placeholder="Ask anything"
-                                    class="w-full bg-transparent resize-none py-1 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0 text-sm md:text-base"
-                                    @input="autoGrow"
-                                    ref="textarea"
-                                    style="min-height: 24px; max-height: 200px;"
-                                ></textarea>
-                            </div>
+                                                        <!-- Globe button -->
+                                                        <button class="flex h-9 w-9 items-center justify-center rounded-full border border-[#4E4F60]/20 text-[#646669] hover:bg-[#404040] transition-colors">
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]">
+                                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9851 4.00291C11.9933 4.00046 11.9982 4.00006 11.9996 4C12.001 4.00006 12.0067 4.00046 12.0149 4.00291C12.0256 4.00615 12.047 4.01416 12.079 4.03356C12.2092 4.11248 12.4258 4.32444 12.675 4.77696C12.9161 5.21453 13.1479 5.8046 13.3486 6.53263C13.6852 7.75315 13.9156 9.29169 13.981 11H10.019C10.0844 9.29169 10.3148 7.75315 10.6514 6.53263C10.8521 5.8046 11.0839 5.21453 11.325 4.77696C11.5742 4.32444 11.7908 4.11248 11.921 4.03356C11.953 4.01416 11.9744 4.00615 11.9851 4.00291Z" fill="currentColor"/>
+                                                            </svg>
+                                                        </button>
 
-                            <!-- Send Button -->
-                            <button 
-                                @click="sendMessage"
-                                :disabled="!canSend"
-                                class="p-1 text-[#646669] hover:text-[#e2b714] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                            </button>
-                        </div>
+                                                        <!-- Reason button -->
+                                                        <button class="flex h-9 items-center justify-center rounded-full border border-[#4E4F60]/20 text-[#646669] hover:bg-[#404040] transition-colors px-3">
+                                                            <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]">
+                                                                <path d="m12 3c-3.585 0-6.5 2.9225-6.5 6.5385 0 2.2826 1.162 4.2913 2.9248 5.4615h7.1504c1.7628-1.1702 2.9248-3.1789 2.9248-5.4615 0-3.6159-2.915-6.5385-6.5-6.5385z" fill="currentColor"/>
+                                                            </svg>
+                                                            <span class="ml-1">Reason</span>
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Right side button -->
+                                                    <div class="flex gap-x-1.5">
+                                                        <button class="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white hover:opacity-70 transition-colors">
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M9.5 4C8.67157 4 8 4.67157 8 5.5V18.5C8 19.3284 8.67157 20 9.5 20C10.3284 20 11 19.3284 11 18.5V5.5C11 4.67157 10.3284 4 9.5 4Z" fill="currentColor"/>
+                                                                <path d="M13 8.5C13 7.67157 13.6716 7 14.5 7C15.3284 7 16 7.67157 16 8.5V15.5C16 16.3284 15.3284 17 14.5 17C13.6716 17 13 16.3284 13 15.5V8.5Z" fill="currentColor"/>
+                                                                <path d="M4.5 9C3.67157 9 3 9.67157 3 10.5V13.5C3 14.3284 3.67157 15 4.5 15C5.32843 15 6 14.3284 6 13.5V10.5C6 9.67157 5.32843 9 4.5 9Z" fill="currentColor"/>
+                                                                <path d="M19.5 9C18.6716 9 18 9.67157 18 10.5V13.5C18 14.3284 18.6716 15 19.5 15C20.3284 15 21 14.3284 21 13.5V10.5C21 9.67157 20.3284 9 19.5 9Z" fill="currentColor"/>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -745,6 +782,16 @@ const closeSidebar = () => {
         isSidebarCollapsed.value = true;
     }
 };
+
+// Add this method in the script section after handleFileUpload
+const triggerFileInput = () => {
+    if (fileInput.value) {
+        fileInput.value.click();
+    }
+};
+
+// Add this with other refs at the top of the script
+const fileInput = ref<HTMLInputElement | null>(null);
 </script>
 
 <style>
