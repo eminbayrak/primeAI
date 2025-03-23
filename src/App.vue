@@ -3,10 +3,10 @@
         <!-- Sidebar -->
         <div class="fixed md:relative bg-[#202123] flex flex-col transition-all duration-200 h-full z-50" 
             :class="{ 
-                'w-64': !isSidebarCollapsed,
-                'w-0 overflow-hidden': isSidebarCollapsed,
-                '-translate-x-full md:translate-x-0': !isMobileMenuOpen,
-                'translate-x-0': isMobileMenuOpen 
+                'w-64': !isSidebarCollapsed || isMobileMenuOpen,
+                'w-0 overflow-hidden': isSidebarCollapsed && !isMobileMenuOpen,
+                '-translate-x-full md:translate-x-0': !isMobileMenuOpen && isSidebarCollapsed,
+                'translate-x-0': isMobileMenuOpen || !isSidebarCollapsed
             }">
             <!-- Sidebar Header -->
             <div class="flex items-center justify-between p-3 border-b border-[#2c2e31]">
@@ -30,13 +30,13 @@
                 </button>
 
                 <!-- Close Sidebar Button -->
-                <button @click="isSidebarCollapsed = true"
+                <button @click="closeSidebar"
                     class="p-2 text-[#ECECF1] hover:bg-[#2A2B32] rounded-md ml-2">
                     <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-4 w-4">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
-                </div>
+            </div>
 
             <!-- Search Input (shown when search is active) -->
             <div v-if="isSearchActive" class="p-3 border-b border-[#2c2e31]">
@@ -51,7 +51,7 @@
                         class="w-full bg-[#2A2B32] text-[#ECECF1] placeholder-[#646669] rounded-lg pl-10 pr-3 py-2 focus:outline-none"
                         @blur="handleSearchBlur"
                     />
-            </div>
+                </div>
             </div>
 
             <!-- Chat History -->
@@ -238,13 +238,13 @@
                 </div>
 
                 <!-- Input Area -->
-                <div class="border-t border-[#2c2e31]">
+                <div>
                     <div class="max-w-3xl mx-auto p-2 md:p-4">
                         <!-- Attached Files Preview -->
                         <div v-if="attachedFiles.length > 0" class="mb-3">
                             <div class="grid grid-cols-3 gap-2 max-w-xs">
                                 <div v-for="(file, index) in attachedFiles" :key="index" 
-                                    class="relative group aspect-square bg-[#444654] rounded-md overflow-hidden border border-[#4E4F60]/20">
+                                    class="relative group aspect-square bg-[#444654] rounded-md overflow-hidden">
                                     <img :src="file.url" alt="Attached file" class="w-full h-full object-cover" />
                                     <button @click="removeFile(index)" 
                                         class="absolute top-1 right-1 bg-[#343541] p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -257,28 +257,12 @@
                         </div>
 
                         <!-- Text Input Area -->
-                        <div class="relative flex items-end gap-2 bg-[#2c2e31] rounded-xl shadow-lg p-2">
+                        <div class="relative flex items-center gap-2 bg-[#2c2e31] rounded-2xl p-3">
                             <!-- Attach Button -->
-                            <div class="relative hidden md:block">
-                                <button class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" />
-                                    </svg>
-                                </button>
-                                <input 
-                                    type="file" 
-                                    @change="handleFileUpload" 
-                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    accept="image/*"
-                                    multiple
-                                />
-                            </div>
-
-                            <!-- Mobile Attach Button -->
-                            <div class="relative md:hidden">
-                                <button class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" />
+                            <div class="relative">
+                                <button class="p-1 text-[#646669] hover:text-[#e2b714] transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                     </svg>
                                 </button>
                                 <input 
@@ -294,10 +278,11 @@
                                 <textarea 
                                     v-model="userInput"
                                     rows="1"
-                                    placeholder="What do you want to know?"
-                                    class="w-full bg-transparent border-0 resize-none py-2 px-2 md:px-3 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0 text-sm md:text-base"
+                                    placeholder="Ask anything"
+                                    class="w-full bg-transparent resize-none py-1 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0 text-sm md:text-base"
                                     @input="autoGrow"
                                     ref="textarea"
+                                    style="min-height: 24px; max-height: 200px;"
                                 ></textarea>
                             </div>
 
@@ -305,9 +290,9 @@
                             <button 
                                 @click="sendMessage"
                                 :disabled="!canSend"
-                                class="p-2 text-[#646669] hover:text-[#e2b714] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                class="p-1 text-[#646669] hover:text-[#e2b714] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
                             </button>
                         </div>
@@ -749,6 +734,15 @@ const isMobileMenuOpen = ref(false);
 const handleSearchBlur = () => {
     if (!searchQuery.value) {
         isSearchActive.value = false;
+    }
+};
+
+// Add this method in the script section after handleSearchBlur
+const closeSidebar = () => {
+    if (window.innerWidth < 768) { // Mobile
+        isMobileMenuOpen.value = false;
+    } else { // Desktop
+        isSidebarCollapsed.value = true;
     }
 };
 </script>
