@@ -253,7 +253,7 @@
                         </div>
 
                         <!-- Text Input Area -->
-                        <form class="w-full">
+                        <form class="w-full" @submit.prevent="sendMessage">
                             <div class="relative z-[1] flex h-full max-w-full flex-1 flex-col">
                                 <div class="group relative z-[1] flex w-full items-center">
                                     <div class="w-full">
@@ -268,6 +268,7 @@
                                                                 placeholder="Ask anything"
                                                                 class="block h-10 w-full resize-none border-0 bg-transparent px-0 py-2 text-[#d1d0c5] placeholder-[#646669] focus:outline-none focus:ring-0 text-sm md:text-base"
                                                                 @input="autoGrow"
+                                                                @keydown.enter.prevent="sendMessage"
                                                                 ref="textarea"
                                                             ></textarea>
                                                         </div>
@@ -279,7 +280,7 @@
                                                     <div class="flex gap-x-1.5">
                                                         <!-- Add button with file input -->
                                                         <div class="relative">
-                                                            <button @click="triggerFileInput" type="button" class="flex h-9 w-9 items-center justify-center rounded-full border border-[#4E4F60]/20 text-[#646669] hover:bg-[#404040] transition-colors">
+                                                            <button type="button" @click="triggerFileInput" class="flex h-9 w-9 items-center justify-center rounded-full border border-[#4E4F60]/20 text-[#646669] hover:bg-[#404040] transition-colors">
                                                                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" class="h-[18px] w-[18px]">
                                                                     <line x1="12" y1="5" x2="12" y2="19"></line>
                                                                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -314,11 +315,13 @@
                                                     <!-- Right side button -->
                                                     <div class="flex gap-x-1.5">
                                                         <button 
+                                                            type="button"
                                                             @click="sendMessage" 
-                                                            :disabled="!canSend"
+                                                            :disabled="!canSend || isProcessing"
                                                             class="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white hover:opacity-70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                                         >
-                                                            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]">
+                                                            <span v-if="isProcessing" class="animate-spin">⌛</span>
+                                                            <svg v-else width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]">
                                                                 <path fill-rule="evenodd" clip-rule="evenodd" d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z" fill="currentColor"/>
                                                             </svg>
                                                         </button>
@@ -529,9 +532,15 @@ const sendMessage = async () => {
 
         const chat = currentChat.value;
 
+        // Process images first if any
+        let processedTexts: string[] = [];
+        if (attachedFiles.value.length > 0) {
+            processedTexts = await processImages();
+        }
+
         // Create user message
         const userMessage: Message = {
-            text: userInput.value,
+            text: userInput.value || 'Image to text conversion',
             images: attachedFiles.value.map(f => f.url),
             isUser: true,
             timestamp: new Date()
@@ -545,21 +554,14 @@ const sendMessage = async () => {
             chat.title = userInput.value.slice(0, 30) + (userInput.value.length > 30 ? '...' : '');
         }
 
-        // Process images if any
-        const processedTexts = await processImages();
-        
-        // TODO: Send to Claude API
-        const prompt = [
-            userInput.value,
-            ...processedTexts
-        ].join('\n\n');
-
         // Add assistant response
-        chat.messages.push({
-            text: `Received your message with ${attachedFiles.value.length} images. Here's what I found in the images:\n\n${processedTexts.join('\n\n')}`,
-            isUser: false,
-            timestamp: new Date()
-        });
+        if (processedTexts.length > 0) {
+            chat.messages.push({
+                text: processedTexts.join('\n\n'),
+                isUser: false,
+                timestamp: new Date()
+            });
+        }
 
         // Update chat's last updated time
         chat.lastUpdated = new Date();
@@ -574,6 +576,14 @@ const sendMessage = async () => {
         }
     } catch (error) {
         console.error('Failed to send message:', error);
+        // Add error message to chat
+        if (currentChat.value) {
+            currentChat.value.messages.push({
+                text: 'Failed to process the image. Please try again.',
+                isUser: false,
+                timestamp: new Date()
+            });
+        }
     } finally {
         isProcessing.value = false;
     }
