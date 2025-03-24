@@ -371,6 +371,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import * as Tesseract from 'tesseract.js';
 import { OcrService } from './services/OcrService';
+import { OpenRouterService, type Message as AIMessage } from './services/OpenRouterService';
 
 interface AttachedFile {
     file: File;
@@ -538,9 +539,15 @@ const sendMessage = async () => {
             processedTexts = await processImages();
         }
 
+        // Prepare user message content
+        const userContent = [
+            userInput.value,
+            ...processedTexts
+        ].filter(text => text.trim()).join('\n\n');
+
         // Create user message
         const userMessage: Message = {
-            text: userInput.value || 'Image to text conversion',
+            text: userContent || 'Image to text conversion',
             images: attachedFiles.value.map(f => f.url),
             isUser: true,
             timestamp: new Date()
@@ -554,14 +561,27 @@ const sendMessage = async () => {
             chat.title = userInput.value.slice(0, 30) + (userInput.value.length > 30 ? '...' : '');
         }
 
-        // Add assistant response
-        if (processedTexts.length > 0) {
-            chat.messages.push({
-                text: processedTexts.join('\n\n'),
-                isUser: false,
-                timestamp: new Date()
-            });
-        }
+        // Prepare messages for AI
+        const aiMessages: AIMessage[] = [
+            {
+                role: 'system',
+                content: 'You are a helpful AI assistant. If the user provides images, they will be converted to text and included in their message. Respond naturally to both text and image content.'
+            } as AIMessage,
+            ...chat.messages.map(msg => ({
+                role: msg.isUser ? 'user' as const : 'assistant' as const,
+                content: msg.text
+            }))
+        ];
+
+        // Get AI response
+        const aiResponse = await OpenRouterService.getChatCompletion(aiMessages);
+
+        // Add AI response to chat
+        chat.messages.push({
+            text: aiResponse,
+            isUser: false,
+            timestamp: new Date()
+        });
 
         // Update chat's last updated time
         chat.lastUpdated = new Date();
@@ -575,11 +595,11 @@ const sendMessage = async () => {
             textarea.value.style.height = 'auto';
         }
     } catch (error) {
-        console.error('Failed to send message:', error);
+        console.error('Failed to process message:', error);
         // Add error message to chat
         if (currentChat.value) {
             currentChat.value.messages.push({
-                text: 'Failed to process the image. Please try again.',
+                text: 'Sorry, I encountered an error while processing your message. Please try again.',
                 isUser: false,
                 timestamp: new Date()
             });
