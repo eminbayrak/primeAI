@@ -203,9 +203,7 @@
                                             }">
                                             <!-- Message Text -->
                                             <div class="max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
-                                                <p class="whitespace-pre-wrap text-[16px] leading-6">
-                                                    {{ message.text }}
-                                                </p>
+                                                <div class="whitespace-pre-wrap text-[16px] leading-6" v-html="message.formattedText || message.text"></div>
                                             </div>
                                             
                                             <!-- Action Buttons - Only for agent messages -->
@@ -372,6 +370,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import * as Tesseract from 'tesseract.js';
 import { OcrService } from './services/OcrService';
 import { OpenRouterService, type Message as AIMessage } from './services/OpenRouterService';
+import { formatMessage } from './utils/messageFormatter';
 
 interface AttachedFile {
     file: File;
@@ -379,11 +378,13 @@ interface AttachedFile {
 }
 
 interface Message {
+    role: 'user' | 'assistant';
     text: string;
     images?: string[];
     isUser: boolean;
     timestamp: Date;
     isCopied?: boolean;
+    formattedText?: string;
 }
 
 interface Chat {
@@ -547,6 +548,7 @@ const sendMessage = async () => {
 
         // Create user message
         const userMessage: Message = {
+            role: 'user',
             text: userContent || 'Image to text conversion',
             images: attachedFiles.value.map(f => f.url),
             isUser: true,
@@ -578,6 +580,7 @@ const sendMessage = async () => {
 
         // Add AI response to chat
         chat.messages.push({
+            role: 'assistant',
             text: aiResponse,
             isUser: false,
             timestamp: new Date()
@@ -599,6 +602,7 @@ const sendMessage = async () => {
         // Add error message to chat
         if (currentChat.value) {
             currentChat.value.messages.push({
+                role: 'assistant',
                 text: 'Sorry, I encountered an error while processing your message. Please try again.',
                 isUser: false,
                 timestamp: new Date()
@@ -819,6 +823,52 @@ const triggerFileInput = () => {
 
 // Add this with other refs at the top of the script
 const fileInput = ref<HTMLInputElement | null>(null);
+
+// Watch messages and format their text
+watch(messages, async (newMessages) => {
+    for (const message of newMessages) {
+        if (!message.formattedText && message.text) {
+            message.formattedText = await formatMessage(message.text);
+            // Add language badges to code blocks
+            nextTick(() => {
+                const preElements = document.querySelectorAll('pre');
+                preElements.forEach(pre => {
+                    const code = pre.querySelector('code');
+                    if (code) {
+                        const classes = Array.from(code.classList);
+                        const languageClass = classes.find(cls => cls.startsWith('language-'));
+                        if (languageClass) {
+                            const language = languageClass.replace('language-', '');
+                            pre.setAttribute('data-language', language);
+                        }
+                    }
+                });
+            });
+        }
+    }
+}, { deep: true });
+
+// Format new messages as they're added
+watch(() => messages.value[messages.value.length - 1], async (newMessage) => {
+    if (newMessage && !newMessage.formattedText && newMessage.text) {
+        newMessage.formattedText = await formatMessage(newMessage.text);
+        // Add language badges to code blocks
+        nextTick(() => {
+            const preElements = document.querySelectorAll('pre');
+            preElements.forEach(pre => {
+                const code = pre.querySelector('code');
+                if (code) {
+                    const classes = Array.from(code.classList);
+                    const languageClass = classes.find(cls => cls.startsWith('language-'));
+                    if (languageClass) {
+                        const language = languageClass.replace('language-', '');
+                        pre.setAttribute('data-language', language);
+                    }
+                }
+            });
+        });
+    }
+}, { immediate: true });
 </script>
 
 <style>
@@ -1007,5 +1057,117 @@ a:hover {
     line-height: 1.5;
     color: var(--textSecondary);
     letter-spacing: -0.02em;
+}
+
+/* Add these styles to your existing <style> section */
+:deep(.hljs) {
+    background: #1E1E1E;
+    color: #D4D4D4;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 0.5rem 0;
+    overflow-x: auto;
+}
+
+:deep(pre) {
+    background: #1E1E1E;
+    border-radius: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+:deep(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.875rem;
+}
+
+:deep(p) {
+    margin: 0.5rem 0;
+}
+
+/* Add styles for the copy button */
+.code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: #2D2D2D;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom: 1px solid #404040;
+}
+
+.copy-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: #D4D4D4;
+    background: #404040;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.copy-button:hover {
+    background: #505050;
+}
+
+/* Add styles for language tag */
+.language-tag {
+    font-size: 0.75rem;
+    color: #808080;
+}
+
+/* Add these styles to your component */
+pre {
+    background-color: #1e1e1e;
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    position: relative;
+}
+
+pre code {
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+pre code.hljs {
+    background-color: transparent;
+    padding: 0;
+}
+
+/* Language badge */
+pre::before {
+    content: attr(data-language);
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: #666;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    background: #2d2d2d;
+    border-bottom-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+/* Scrollbar styling */
+pre::-webkit-scrollbar {
+    height: 8px;
+}
+
+pre::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 4px;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 4px;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+    background: #888;
 }
 </style>

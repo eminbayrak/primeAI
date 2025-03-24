@@ -1,4 +1,7 @@
-module.exports = {
+const { defineConfig } = require('@vue/cli-service');
+const Dotenv = require('dotenv-webpack');
+
+module.exports = defineConfig({
     lintOnSave: false,
     pwa: {
         iconPaths: {
@@ -21,4 +24,10 @@ module.exports = {
             },
         },
     },
-};
+    transpileDependencies: true,
+    configureWebpack: {
+        plugins: [
+            new Dotenv()
+        ]
+    }
+});

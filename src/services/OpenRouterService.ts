@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+const API_KEY = process.env.VITE_OPENROUTER_API_KEY || import.meta.env?.VITE_OPENROUTER_API_KEY;
 
 if (!API_KEY) {
     throw new Error('OpenRouter API key not found in environment variables. Please add VITE_OPENROUTER_API_KEY to your .env file.');
